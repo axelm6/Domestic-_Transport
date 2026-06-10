@@ -404,8 +404,8 @@ function renderMap(){
     var tdL=TENDER_LANES.filter(function(l){return l.origin===name;});
     if(activeLayer==='existing'&&!exL.length)return;
     if(activeLayer==='tender'&&!tdL.length)return;
-    L.circleMarker(coord,{radius:13,fillColor:'#E60080',color:'#E60080',weight:0,fillOpacity:0.15}).addTo(markerGroup);
-    var marker=L.circleMarker(coord,{radius:9,fillColor:'#E60080',color:'#fff',weight:2.5,fillOpacity:1});
+    L.circleMarker(coord,{radius:8,fillColor:'#E60080',color:'#E60080',weight:0,fillOpacity:0.15}).addTo(markerGroup);
+    var marker=L.circleMarker(coord,{radius:5,fillColor:'#E60080',color:'#fff',weight:2,fillOpacity:1});
     var tip='<b>'+name+'</b><br>'+exL.length+' ongoing lane'+(exL.length!==1?'s':'');
     if(tdL.length)tip+=' - '+tdL.length+' tender'+(tdL.length!==1?'s':'');
     if(exL.length>0&&exL[0].carriers&&exL[0].carriers.length>0){var cc=[...new Set(exL.reduce(function(a,l){return a.concat(l.carriers||[]);},[])) ].slice(0,2).join(', ');if(cc)tip+='<br><span style="font-size:10px;opacity:0.8;">'+cc+'</span>';}
