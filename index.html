@@ -432,7 +432,8 @@ function renderStatesOnly(){
 
 function setLayer(layer,btn){
   activeLayer=layer;
-  syncLayerButtons();
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  if(btn)btn.classList.add('active');
   renderMap();buildLaneList();
 }
 
@@ -458,35 +459,27 @@ function buildOriginPills(){
   el.innerHTML=h;
 }
 
-function syncLayerButtons(){
-  var layerToNavId={all:'nav-all',existing:'nav-existing',tender:'nav-tender',states:'nav-states'};
-  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  var activeBtn=document.getElementById(layerToNavId[activeLayer]);
-  if(activeBtn)activeBtn.classList.add('active');
-}
-
 function toggleOriginEl(el){
   var origin=el.getAttribute('data-origin');
   if(activeOrigins.has(origin)){activeOrigins.delete(origin);el.classList.remove('checked');}
   else{activeOrigins.add(origin);el.classList.add('checked');}
-  renderMap();buildLaneList();syncLayerButtons();
+  renderMap();buildLaneList();
 }
 
 function selectAllOrigins(){
   var seen={};EXISTING_LANES.concat(TENDER_LANES).forEach(function(l){seen[l.origin]=true;});
   Object.keys(seen).forEach(function(o){activeOrigins.add(o);var el=document.getElementById('ocr-'+o.replace(/[^a-zA-Z0-9]/g,'-'));if(el)el.classList.add('checked');});
-  renderMap();buildLaneList();syncLayerButtons();
+  renderMap();buildLaneList();
 }
 
 function clearAllOrigins(){
   activeOrigins.clear();document.querySelectorAll('.oc-row').forEach(function(r){r.classList.remove('checked');});
-  renderMap();buildLaneList();syncLayerButtons();
+  renderMap();buildLaneList();
 }
 
 function setOrigin(origin){
   var el=document.getElementById('ocr-'+origin.replace(/[^a-zA-Z0-9]/g,'-'));
   if(el)toggleOriginEl(el);
-  syncLayerButtons();
 }
 
 function buildLaneList(){
