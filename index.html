@@ -139,6 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
       </div>
       <div class="dropdown-wrap">
         <select class="customer-dropdown" id="customer-select" onchange="switchCustomer(this.value)">
+          <option value="ALL_CUSTOMERS">All Customers</option>
           <option value="RESTAURANT DEPOT">Restaurant Depot</option>
         </select>
       </div>
@@ -261,9 +262,21 @@ var ABBR={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO
 function cityToState(s){if(!s)return null;var p=s.trim().split(' ');return ABBR[p[p.length-1].toUpperCase()]||null;}
 function toTitleCase(s){return s.toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();}).replace(/\bLlc\b/g,'LLC').replace(/\bDba\b/g,'DBA').replace(/\bUsa\b/g,'USA');}
 
+function buildAllCustomersData(){
+  // Merge RD + all other customers into one combined dataset
+  var combined=RD_EXISTING_LANES.slice();
+  var keys=Object.keys(ALL_CUSTOMER_DATA);
+  for(var i=0;i<keys.length;i++){
+    var lanes=ALL_CUSTOMER_DATA[keys[i]];
+    for(var j=0;j<lanes.length;j++)combined.push(lanes[j]);
+  }
+  return combined;
+}
+
 function buildCustomerDropdown(){
   var sel=document.getElementById('customer-select');
-  sel.innerHTML='<option value="RESTAURANT DEPOT">Restaurant Depot</option>';
+  sel.innerHTML='<option value="ALL_CUSTOMERS">All Customers</option>'
+    +'<option value="RESTAURANT DEPOT">Restaurant Depot</option>';
   var keys=Object.keys(ALL_CUSTOMER_DATA).sort();
   for(var i=0;i<keys.length;i++){var opt=document.createElement('option');opt.value=keys[i];opt.textContent=toTitleCase(keys[i]);sel.appendChild(opt);}
 }
@@ -272,8 +285,15 @@ function switchCustomer(val){
   currentCustomer=val;activeOrigins.clear();activeLayer='all';
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   document.getElementById('nav-all').classList.add('active');
-  if(val==='RESTAURANT DEPOT'){EXISTING_LANES=RD_EXISTING_LANES;TENDER_LANES=RD_TENDER_LANES;document.getElementById('btn-tender').style.display='';}
-  else{EXISTING_LANES=ALL_CUSTOMER_DATA[val]||[];TENDER_LANES=[];document.getElementById('btn-tender').style.display='none';}
+  if(val==='ALL_CUSTOMERS'){
+    EXISTING_LANES=buildAllCustomersData();
+    TENDER_LANES=RD_TENDER_LANES;
+    document.getElementById('btn-tender').style.display='';
+  }else if(val==='RESTAURANT DEPOT'){
+    EXISTING_LANES=RD_EXISTING_LANES;TENDER_LANES=RD_TENDER_LANES;document.getElementById('btn-tender').style.display='';
+  }else{
+    EXISTING_LANES=ALL_CUSTOMER_DATA[val]||[];TENDER_LANES=[];document.getElementById('btn-tender').style.display='none';
+  }
   updateStats();buildOriginPills();renderMap();buildLaneList();fitAll();
 }
 
@@ -285,7 +305,7 @@ function updateStats(){
   document.getElementById('stat-td').textContent=tdC||'0';
   document.getElementById('stat-hub').textContent=hubs;
   document.getElementById('stat-jobs').textContent=jobs;
-  var nm=currentCustomer==='RESTAURANT DEPOT'?'Restaurant Depot':toTitleCase(currentCustomer);
+  var nm=currentCustomer==='ALL_CUSTOMERS'?'All Customers':currentCustomer==='RESTAURANT DEPOT'?'Restaurant Depot':toTitleCase(currentCustomer);
   document.getElementById('topbar-meta').textContent=exC+' ongoing lane'+(exC!==1?'s':'')+(tdC?' - '+tdC+' tender'+(tdC!==1?'s':''):'')+' - '+nm;
 }
 
@@ -528,7 +548,13 @@ function closeDetail(){document.getElementById('detail-panel').classList.remove(
 function fitAll(){rdMap.flyTo([38.5,-98],4,{duration:0.8});closeDetail();}
 
 window.addEventListener('load',function(){
-  buildCustomerDropdown();initMap();
+  buildCustomerDropdown();
+  // Start with All Customers selected
+  currentCustomer='ALL_CUSTOMERS';
+  EXISTING_LANES=buildAllCustomersData();
+  TENDER_LANES=RD_TENDER_LANES;
+  document.getElementById('customer-select').value='ALL_CUSTOMERS';
+  initMap();
   setTimeout(function(){if(rdMap)rdMap.invalidateSize();},100);
   setTimeout(function(){if(rdMap)rdMap.invalidateSize();},600);
   setTimeout(function(){if(rdMap)rdMap.invalidateSize();},1500);
