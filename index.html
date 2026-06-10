@@ -393,7 +393,7 @@ function renderMap(){
   var allVis=EXISTING_LANES.concat(TENDER_LANES).filter(function(l){return(activeLayer==='existing'&&!('ref' in l))||(activeLayer==='tender'&&('ref' in l))||activeLayer==='all';}).filter(function(l){return activeOrigins.size===0||activeOrigins.has(l.origin);});
   allVis.forEach(function(l){
     var key=l.dest_lat+','+l.dest_lng;if(destSet.has(key))return;destSet.add(key);
-    L.circleMarker([l.dest_lat,l.dest_lng],{radius:5,fillColor:('ref' in l)?'#FAB43C':'#32AAE1',color:'#fff',weight:1.5,fillOpacity:0.75}).addTo(markerGroup);
+    L.circleMarker([l.dest_lat,l.dest_lng],{radius:3,fillColor:('ref' in l)?'#FAB43C':'#32AAE1',color:'#fff',weight:1.5,fillOpacity:0.75}).addTo(markerGroup);
   });
   var origCoords={};
   EXISTING_LANES.concat(TENDER_LANES).forEach(function(l){if(!origCoords[l.origin])origCoords[l.origin]=[l.orig_lat,l.orig_lng];});
