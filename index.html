@@ -1859,9 +1859,7 @@ async function runRegionSearch(states, regionLabel) {
 
       const entityType = document.getElementById('auth-filter')?.value || 'carriers';
 
-      const r = await fetch(`/api/carriers?state=${st}&limit=2000&entityType=${entityType}`);
-
-      const data = await r.json();
+      const data = await apiFetchCarriers(st, 2000, 0, entityType);
 
       (data.content || []).forEach(c => {
 
@@ -1905,13 +1903,105 @@ async function runRegionSearch(states, regionLabel) {
 
 }
 
+/* ── Resilient API layer ─────────────────────────────────────────────
+   The page normally talks to its own backend (/api/carriers, /api/authority).
+   When the page is opened without that backend (e.g. as a local file or a
+   static deployment), those endpoints return an HTML 404 page, which caused
+   the “Unexpected token 'T', "The page c"… is not valid JSON” error.
+   These helpers detect that and fall back to querying the public FMCSA
+   Company Census dataset (data.transportation.gov) directly. */
+let __carriersApiDown = false;
+let __authorityApiDown = false;
+
+async function apiFetchCarriers(state, limit, offset, entityType) {
+  limit  = limit  || 2000;
+  offset = offset || 0;
+  if (!__carriersApiDown) {
+    try {
+      const r  = await fetch(`/api/carriers?state=${encodeURIComponent(state)}&limit=${limit}&offset=${offset}&entityType=${encodeURIComponent(entityType || 'carriers')}`);
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      if (r.ok && ct.includes('json')) {
+        return await r.json();
+      }
+      __carriersApiDown = true; // backend missing or returning HTML — switch to direct mode
+    } catch (e) {
+      __carriersApiDown = true;
+    }
+  }
+  return await fetchCarriersDirect(state, limit, offset, entityType);
+}
+
+function __mapCensusRecord(c) {
+  // Pick the active MC docket first, otherwise any MC docket
+  const mcNum =
+    (c.docket1prefix === 'MC' && c.docket1_status_code === 'A') ? c.docket1 :
+    (c.docket2prefix === 'MC' && c.docket2_status_code === 'A') ? c.docket2 :
+    (c.docket3prefix === 'MC' && c.docket3_status_code === 'A') ? c.docket3 :
+    (c.docket1prefix === 'MC') ? c.docket1 :
+    (c.docket2prefix === 'MC') ? c.docket2 :
+    (c.docket3prefix === 'MC') ? c.docket3 : '';
+  return {
+    dotNumber:       c.dot_number    || '',
+    legalName:       c.legal_name    || '',
+    dbaName:         c.dba_name      || '',
+    phyStreet:       c.phy_street    || '',
+    phyCity:         c.phy_city      || '',
+    phyState:        c.phy_state     || '',
+    phyZip:          c.phy_zip       || '',
+    telephone:       c.phone         || '',
+    phone:           c.phone         || '',
+    classdef:        c.classdef      || '',
+    carrierOperation: c.carrier_operation || '',
+    totalPowerUnits: c.power_units   || '',
+    totalDrivers:    c.total_drivers || '',
+    docketNumber:    mcNum           || '',
+  };
+}
+
+async function fetchCarriersDirect(state, limit, offset, entityType) {
+  const base = 'https://data.transportation.gov/resource/az4n-8mr2.json';
+  const buildUrl = (withStatusFilter) => {
+    let where = `upper(phy_state)='${String(state).toUpperCase().replace(/'/g, "''")}'`;
+    if (withStatusFilter) where += ` AND status_code='A'`;
+    if (entityType === 'brokers') where += ` AND upper(classdef) like '%BROKER%'`;
+    const p = new URLSearchParams({
+      '$where':  where,
+      '$limit':  String(limit),
+      '$offset': String(offset),
+      '$order':  'legal_name',
+    });
+    return `${base}?${p.toString()}`;
+  };
+  let res = await fetch(buildUrl(true), { headers: { 'Accept': 'application/json' } });
+  if (!res.ok) throw new Error(`FMCSA data service error (HTTP ${res.status})`);
+  let rows = await res.json();
+  // If the active-only filter returns nothing (field naming can vary), retry without it
+  if (!Array.isArray(rows) || rows.length === 0) {
+    res = await fetch(buildUrl(false), { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`FMCSA data service error (HTTP ${res.status})`);
+    rows = await res.json();
+  }
+  const content = (Array.isArray(rows) ? rows : []).map(__mapCensusRecord);
+  return { content, total: content.length };
+}
+
+async function apiFetchAuthority(dot) {
+  if (__authorityApiDown) return {};
+  try {
+    const r  = await fetch(`/api/authority?dot=${encodeURIComponent(dot)}`);
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (r.ok && ct.includes('json')) return await r.json();
+    __authorityApiDown = true; // backend missing — skip authority checks (fail-safe: keep carriers)
+    return {};
+  } catch (e) {
+    __authorityApiDown = true;
+    return {};
+  }
+}
+
 async function fetchByState(state, start, size) {
 
-  const r = await fetch(`/api/carriers?state=${encodeURIComponent(state)}&size=${size}&start=${start}`);
-
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-
-  const data = await r.json();
+  const data = await apiFetchCarriers(state, size, start, 'carriers');
 
   if (data.error) throw new Error(data.error);
 
@@ -1973,11 +2063,7 @@ async function runSearch(offsetStart) {
 
     // Always query by state — name keyword is applied client-side after results arrive
     const entityType = document.getElementById('auth-filter').value;
-    const url = `/api/carriers?state=${encodeURIComponent(state)}&limit=2000&offset=${offsetStart}&entityType=${entityType}`;
-
-    const r = await fetch(url);
-
-    const data = await r.json();
+    const data = await apiFetchCarriers(state, 2000, offsetStart, entityType);
 
     if (data.error) throw new Error(data.error);
 
@@ -2304,9 +2390,7 @@ async function verifyThenRender(pgSz, label) {
         return;
       }
       try {
-        const auth = await fetch(`/api/authority?dot=${dot}`)
-          .then(r => r.json())
-          .catch(() => ({}));
+        const auth = await apiFetchAuthority(dot);
         authorityMap[dot] = {
           ca: (auth.commonAuthorityStatus  || '').toUpperCase(),
           ct: (auth.contractAuthorityStatus || '').toUpperCase(),
@@ -2930,9 +3014,7 @@ async function searchAllUS() {
 
       const entityType = document.getElementById('auth-filter')?.value || 'carriers';
 
-      const r = await fetch(`/api/carriers?state=${st}&limit=2000&entityType=${entityType}`);
-
-      const data = await r.json();
+      const data = await apiFetchCarriers(st, 2000, 0, entityType);
 
       let stCount = 0;
 
@@ -3332,7 +3414,7 @@ async function renderDetailPanel(c) {
 
   // ── Fetch live data from QCMobile ───────────────────────────────
 
-  const authResult = await fetch(`/api/authority?dot=${dot}`).then(r => r.json()).catch(() => ({}));
+  const authResult = await apiFetchAuthority(dot).catch(() => ({}));
 
   const auth = authResult || {};
 
