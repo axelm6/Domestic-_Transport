@@ -806,6 +806,15 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
 
             </div>
 
+            <div class="field">
+
+              <label>Live verification <span title="Paste your free FMCSA QCMobile WebKey to verify authority status in real time against FMCSA's live system. Get one at mobile.fmcsa.dot.gov/QCDevsite — registration is free and instant." style="cursor:help;opacity:.6;">ⓘ</span></label>
+
+              <input type="password" id="fmcsa-webkey" placeholder="FMCSA WebKey (optional)" autocomplete="off"
+                     onchange="try{localStorage.setItem('carriernet_fmcsa_webkey', this.value.trim());}catch(e){}" />
+
+            </div>
+
           </div>
 
           <div class="act-row">
@@ -1992,18 +2001,63 @@ async function fetchCarriersDirect(state, limit, offset, entityType) {
   return { content, total: content.length };
 }
 
-async function apiFetchAuthority(dot) {
-  if (__authorityApiDown) return {};
+function getFmcsaWebKey() {
+  const el = document.getElementById('fmcsa-webkey');
+  let k = el && el.value ? el.value.trim() : '';
+  if (!k) { try { k = (localStorage.getItem('carriernet_fmcsa_webkey') || '').trim(); } catch (e) {} }
+  return k;
+}
+// Restore a saved key into the field on load
+document.addEventListener('DOMContentLoaded', () => {
   try {
-    const r  = await fetch(`/api/authority?dot=${encodeURIComponent(dot)}`);
-    const ct = (r.headers.get('content-type') || '').toLowerCase();
-    if (r.ok && ct.includes('json')) return await r.json();
-    __authorityApiDown = true; // backend missing — skip authority checks (fail-safe: keep carriers)
-    return {};
-  } catch (e) {
-    __authorityApiDown = true;
-    return {};
+    const k = (localStorage.getItem('carriernet_fmcsa_webkey') || '').trim();
+    const el = document.getElementById('fmcsa-webkey');
+    if (k && el) el.value = k;
+  } catch (e) {}
+});
+
+let __qcKeyBad = false;
+
+async function apiFetchAuthority(dot) {
+  // 1) Backend API (if deployed with one)
+  if (!__authorityApiDown) {
+    try {
+      const r  = await fetch(`/api/authority?dot=${encodeURIComponent(dot)}`);
+      const ct = (r.headers.get('content-type') || '').toLowerCase();
+      if (r.ok && ct.includes('json')) return await r.json();
+      __authorityApiDown = true; // backend missing — try live FMCSA instead
+    } catch (e) {
+      __authorityApiDown = true;
+    }
   }
+  // 2) Live FMCSA QCMobile API (real-time truth) — needs the user's free WebKey
+  const key = getFmcsaWebKey();
+  if (key && !__qcKeyBad) {
+    try {
+      const r = await fetch(`https://mobile.fmcsa.dot.gov/qc/services/carriers/${encodeURIComponent(dot)}?webKey=${encodeURIComponent(key)}`);
+      if (r.ok) {
+        const j = await r.json();
+        const k = j && j.content && j.content.carrier ? j.content.carrier : null;
+        if (k) {
+          return {
+            commonAuthorityStatus:   k.commonAuthorityStatus   || '',
+            contractAuthorityStatus: k.contractAuthorityStatus || '',
+            brokerAuthorityStatus:   k.brokerAuthorityStatus   || '',
+            safetyRating:            k.safetyRating            || '',
+            insuranceOnFile:         k.bipdInsuranceOnFile != null ? String(k.bipdInsuranceOnFile) : '',
+            insuranceRequired:       k.bipdInsuranceRequired != null ? String(k.bipdInsuranceRequired) : '',
+            outOfServiceDate:        k.oosDate                 || '',
+            allowedToOperate:        (k.allowedToOperate || '').toUpperCase(),
+            _live: true,
+          };
+        }
+      } else if (r.status === 401 || r.status === 403) {
+        __qcKeyBad = true; // invalid key — stop retrying so we don't hammer FMCSA
+      }
+    } catch (e) { /* network/CORS issue — fall through to census */ }
+  }
+  // 3) Nothing live available — caller falls back to census docket status
+  return {};
 }
 
 async function fetchByState(state, start, size) {
@@ -2384,8 +2438,9 @@ async function verifyThenRender(pgSz, label) {
     </div>`;
 
   // Authority-check all carriers in parallel batches of 10
-  const authorityMap = {}; // dot → { ca, ct }
+  const authorityMap = {}; // dot → { ca, ct, oos, notAllowed }
   let done = 0;
+  let liveCount = 0;
 
   for (let i = 0; i < allResults.length; i += 10) {
     const batch = allResults.slice(i, i + 10);
@@ -2400,29 +2455,39 @@ async function verifyThenRender(pgSz, label) {
         const auth = await apiFetchAuthority(dot);
         let ca = (auth.commonAuthorityStatus  || '').toUpperCase();
         let ct = (auth.contractAuthorityStatus || '').toUpperCase();
-        // If the backend authority API gave nothing, fall back to the MC docket
+        const live = !!auth._live || !!(ca || ct);
+        if (live) liveCount++;
+        // If no live source gave an answer, fall back to the MC docket
         // status from the FMCSA census record so inactive authorities still get filtered
         if (!ca && !ct && c._mcStatus) { ca = c._mcStatus; }
-        authorityMap[dot] = { ca, ct };
+        authorityMap[dot] = {
+          ca, ct,
+          oos:        !!auth.outOfServiceDate,
+          notAllowed: (auth.allowedToOperate || '') === 'N',
+        };
       } catch(e) {
-        authorityMap[dot] = { ca: (c._mcStatus || ''), ct: '' };
+        authorityMap[dot] = { ca: (c._mcStatus || ''), ct: '', oos: false, notAllowed: false };
       }
       done++;
       const pct = Math.round((done / total) * 100);
       const bar = document.getElementById('verify-bar');
       const msg = document.getElementById('verify-msg');
       if (bar) bar.style.width = pct + '%';
-      if (msg) msg.textContent = `Verified ${done} of ${total} carriers…`;
+      if (msg) msg.textContent = liveCount > 0
+        ? `Live FMCSA check: ${done} of ${total} carriers… (${pct}%)`
+        : `Checking ${done} of ${total} carriers against FMCSA census… (${pct}%)`;
     }));
   }
 
   // STRICT MODE — professional-grade list quality:
   // only carriers with an MC number whose authority is confirmed ACTIVE are shown.
-  // No-MC, pending, inactive, and unverifiable carriers are all excluded.
+  // No-MC, pending, inactive, out-of-service, not-allowed-to-operate,
+  // and unverifiable carriers are all excluded.
   allResults = allResults.filter(c => {
     const dot = String(c.dotNumber || '');
     const r = authorityMap[dot];
     if (!r || r.noMc) return false;        // no MC number — can't run for-hire interstate freight
+    if (r.oos || r.notAllowed) return false; // FMCSA out-of-service or not allowed to operate
     return r.ca === 'A' || r.ct === 'A';   // require confirmed active common or contract authority
   });
 
@@ -3436,27 +3501,51 @@ async function renderDetailPanel(c) {
 
   const oos     = auth.outOfServiceDate || '';
 
+  // ── Did we actually receive live QCMobile data? ─────────────────
+  // If the backend authority API is unavailable it returns {} — that is
+  // "no data", NOT "no authority". In that case fall back to the MC docket
+  // status from the FMCSA census record (the same source used to build the
+  // verified list) instead of falsely marking the carrier Inactive.
+  const liveData = !!(auth._live || ca || ct || sr || insFile || insReq || oos || auth.allowedToOperate);
+  let effCa = ca, effCt = ct, srcNote = '';
+  if (!liveData) {
+    effCa   = (c._authorityStatus || c._mcStatus || '').toUpperCase();
+    effCt   = '';
+    srcNote = ' — per FMCSA census';
+  }
+
   // ── CARRIER AUTHORITY ─────────────────────────────────────────
 
   let authStatus, authLabel;
 
-  if (ca === 'A' || ct === 'A') {
+  const notAllowed = (auth.allowedToOperate || '').toUpperCase() === 'N';
 
-    authStatus = 'good'; authLabel = 'Carrier Authority (Active)';
+  if (liveData && notAllowed) {
 
-  } else if (ca === 'P' || ct === 'P') {
+    authStatus = 'bad'; authLabel = 'Carrier Authority (Not Allowed to Operate)';
 
-    authStatus = 'warn'; authLabel = 'Carrier Authority (Pending)';
+  } else if (effCa === 'A' || effCt === 'A') {
+
+    authStatus = 'good'; authLabel = 'Carrier Authority (Active)' + srcNote;
+
+  } else if (effCa === 'P' || effCt === 'P') {
+
+    authStatus = 'warn'; authLabel = 'Carrier Authority (Pending)' + srcNote;
 
   } else if (oos) {
 
     authStatus = 'bad'; authLabel = 'Carrier Authority (Out of Service)';
 
+  } else if (!liveData && !effCa) {
+
+    // No live data AND no census signal — unknown, not confirmed inactive
+    authStatus = 'warn'; authLabel = 'Carrier Authority (Unverified — check SAFER)';
+
   } else {
 
     authStatus = 'bad';
 
-    authLabel  = ca === 'I' || ct === 'I' ? 'Carrier Authority (Inactive)' : 'Carrier Authority (None)';
+    authLabel  = effCa === 'I' || effCt === 'I' ? 'Carrier Authority (Inactive)' : 'Carrier Authority (None)';
 
   }
 
@@ -3482,13 +3571,14 @@ async function renderDetailPanel(c) {
 
   // ── Update the table row with live QCMobile authority status ─────
 
-  // This overwrites the stale census badge with the verified live result
+  // Only overwrite the badge when we genuinely received live data —
+  // otherwise the census-verified badge in the table stays as-is.
 
   const mcNum = c.docketNumber || '';
 
-  let liveBadge;
+  let liveBadge = null;
 
-  if (authStatus === 'good') {
+  if (liveData && authStatus === 'good') {
 
     liveBadge = `<div style="display:flex;flex-direction:column;gap:2px;">
 
@@ -3498,7 +3588,7 @@ async function renderDetailPanel(c) {
 
     </div>`;
 
-  } else if (authStatus === 'warn') {
+  } else if (liveData && authStatus === 'warn') {
 
     liveBadge = `<div style="display:flex;flex-direction:column;gap:2px;">
 
@@ -3508,7 +3598,7 @@ async function renderDetailPanel(c) {
 
     </div>`;
 
-  } else {
+  } else if (liveData) {
 
     liveBadge = `<div style="display:flex;flex-direction:column;gap:2px;">
 
@@ -3521,6 +3611,9 @@ async function renderDetailPanel(c) {
   }
 
   // Find the row by DOT and update its MC Authority cell (5th td, index 4)
+  // — only when we actually received live data to report
+
+  if (liveBadge) {
 
   const rows = document.querySelectorAll('tbody tr');
 
@@ -3545,6 +3638,8 @@ async function renderDetailPanel(c) {
       break;
 
     }
+
+  }
 
   }
 
