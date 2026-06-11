@@ -3545,10 +3545,28 @@ async function renderDetailPanel(c) {
   // verified list) instead of falsely marking the carrier Inactive.
   const liveData = !!(auth._live || ca || ct || sr || insFile || insReq || oos || auth.allowedToOperate);
   let effCa = ca, effCt = ct, srcNote = '';
+  let censusVerdict = false; // true once the census has given a definitive answer
   if (!liveData) {
     effCa   = (c._authorityStatus || c._mcStatus || '').toUpperCase();
     effCt   = '';
     srcNote = ' — per FMCSA census';
+    if (effCa) censusVerdict = true;
+    // No cached status either (e.g. carrier opened from a saved list) —
+    // look the carrier up in the FMCSA census right now so the verdict is
+    // a definitive Active/Inactive instead of an inconclusive "Review"
+    if (!effCa) {
+      try {
+        const cr = await fetch(`https://data.transportation.gov/resource/az4n-8mr2.json?$where=dot_number='${encodeURIComponent(dot)}'&$limit=1`, { headers: { 'Accept': 'application/json' } });
+        if (cr.ok) {
+          const rows = await cr.json();
+          if (Array.isArray(rows) && rows.length) {
+            const m = __mapCensusRecord(rows[0]);
+            effCa = (m._mcStatus || '').toUpperCase();
+            censusVerdict = true; // record found — verdict is definitive even if no MC
+          }
+        }
+      } catch (e) { /* census unreachable — fall through to Unverified */ }
+    }
   }
 
   // ── CARRIER AUTHORITY ─────────────────────────────────────────
@@ -3573,7 +3591,7 @@ async function renderDetailPanel(c) {
 
     authStatus = 'bad'; authLabel = 'Carrier Authority (Out of Service)';
 
-  } else if (!liveData && !effCa) {
+  } else if (!liveData && !censusVerdict && !effCa) {
 
     // No live data AND no census signal — unknown, not confirmed inactive
     authStatus = 'warn'; authLabel = 'Carrier Authority (Unverified — check SAFER)';
@@ -3582,7 +3600,7 @@ async function renderDetailPanel(c) {
 
     authStatus = 'bad';
 
-    authLabel  = effCa === 'I' || effCt === 'I' ? 'Carrier Authority (Inactive)' : 'Carrier Authority (None)';
+    authLabel  = (effCa === 'I' || effCt === 'I' ? 'Carrier Authority (Inactive)' : 'Carrier Authority (None)') + (liveData ? '' : srcNote);
 
   }
 
