@@ -2435,10 +2435,35 @@ async function verifyThenRender(pgSz, label) {
       <div style="height:4px;background:var(--surface2);border-radius:99px;margin:16px auto 0;width:240px;overflow:hidden;">
         <div id="verify-bar" style="height:100%;background:linear-gradient(90deg,#32AAE1,#786EAF);border-radius:99px;width:0%;transition:width 0.3s ease;"></div>
       </div>
+      <div class="ss" id="verify-sub" style="margin-top:10px;font-size:11px;color:var(--text3);">
+        Only carriers with confirmed active authority will be listed
+      </div>
     </div>`;
 
-  // Authority-check all carriers in parallel batches of 10
-  const authorityMap = {}; // dot → { ca, ct, oos, notAllowed }
+  const bar = () => document.getElementById('verify-bar');
+  const msg = () => document.getElementById('verify-msg');
+
+  // Single authority check for one carrier — ok=true only when a live
+  // source (backend API or FMCSA QCMobile) actually answered
+  async function checkOne(c) {
+    const dot = String(c.dotNumber || '');
+    try {
+      const auth = await apiFetchAuthority(dot);
+      const ca = (auth.commonAuthorityStatus  || '').toUpperCase();
+      const ct = (auth.contractAuthorityStatus || '').toUpperCase();
+      return {
+        ca, ct,
+        ok: !!auth._live || !!(ca || ct),
+        oos:        !!auth.outOfServiceDate,
+        notAllowed: (auth.allowedToOperate || '').toUpperCase() === 'N',
+      };
+    } catch (e) {
+      return { ca: '', ct: '', ok: false, oos: false, notAllowed: false };
+    }
+  }
+
+  // ── PASS 1: check all carriers in parallel batches of 10 ──────────
+  const authorityMap = {}; // dot → { ca, ct, ok, oos, notAllowed, noMc }
   let done = 0;
   let liveCount = 0;
 
@@ -2448,55 +2473,67 @@ async function verifyThenRender(pgSz, label) {
       const dot = String(c.dotNumber || '');
       const mc  = (c.docketNumber && c.docketNumber !== '0') ? c.docketNumber : '';
       if (!dot || !mc) {
-        authorityMap[dot] = { ca: '', ct: '', noMc: true };
-        return;
-      }
-      try {
-        const auth = await apiFetchAuthority(dot);
-        let ca = (auth.commonAuthorityStatus  || '').toUpperCase();
-        let ct = (auth.contractAuthorityStatus || '').toUpperCase();
-        const live = !!auth._live || !!(ca || ct);
-        if (live) liveCount++;
-        // If no live source gave an answer, fall back to the MC docket
-        // status from the FMCSA census record so inactive authorities still get filtered
-        if (!ca && !ct && c._mcStatus) { ca = c._mcStatus; }
-        authorityMap[dot] = {
-          ca, ct,
-          oos:        !!auth.outOfServiceDate,
-          notAllowed: (auth.allowedToOperate || '') === 'N',
-        };
-      } catch(e) {
-        authorityMap[dot] = { ca: (c._mcStatus || ''), ct: '', oos: false, notAllowed: false };
+        authorityMap[dot] = { ca: '', ct: '', ok: false, noMc: true };
+      } else {
+        authorityMap[dot] = await checkOne(c);
+        if (authorityMap[dot].ok) liveCount++;
       }
       done++;
       const pct = Math.round((done / total) * 100);
-      const bar = document.getElementById('verify-bar');
-      const msg = document.getElementById('verify-msg');
-      if (bar) bar.style.width = pct + '%';
-      if (msg) msg.textContent = liveCount > 0
+      if (bar()) bar().style.width = pct + '%';
+      if (msg()) msg().textContent = liveCount > 0
         ? `Live FMCSA check: ${done} of ${total} carriers… (${pct}%)`
-        : `Checking ${done} of ${total} carriers against FMCSA census… (${pct}%)`;
+        : `Checking ${done} of ${total} carriers… (${pct}%)`;
     }));
   }
 
-  // STRICT MODE — professional-grade list quality:
-  // only carriers with an MC number whose authority is confirmed ACTIVE are shown.
-  // No-MC, pending, inactive, out-of-service, not-allowed-to-operate,
-  // and unverifiable carriers are all excluded.
+  // ── PASS 2: double-check — retry carriers whose first check came back
+  //    empty, so a temporary API hiccup doesn't decide their status ─────
+  if (liveCount > 0) {
+    const retry = allResults.filter(c => {
+      const r = authorityMap[String(c.dotNumber || '')];
+      return r && !r.noMc && !r.ok;
+    });
+    if (retry.length) {
+      if (msg()) msg().textContent = `Double-checking ${retry.length} unconfirmed carriers…`;
+      if (bar()) bar().style.width = '0%';
+      let redone = 0;
+      for (let i = 0; i < retry.length; i += 5) {
+        const batch = retry.slice(i, i + 5);
+        // brief pause so a rate-limited API gets room to answer correctly
+        await new Promise(res => setTimeout(res, 400));
+        await Promise.all(batch.map(async (c) => {
+          const dot = String(c.dotNumber || '');
+          authorityMap[dot] = await checkOne(c);
+          if (authorityMap[dot].ok) liveCount++;
+          redone++;
+          const pct = Math.round((redone / retry.length) * 100);
+          if (bar()) bar().style.width = pct + '%';
+          if (msg()) msg().textContent = `Double-checking ${redone} of ${retry.length} carriers… (${pct}%)`;
+        }));
+      }
+    }
+  }
+
+  // ── STRICT FILTER ───────────────────────────────────────────────────
+  // Live mode (any live answers): only carriers CONFIRMED active by the
+  // live check stay — unverified ones are dropped, never assumed active.
+  // Census mode (no live source at all): fall back to the FMCSA census
+  // MC docket status, which is also what the detail panel will show.
+  const liveMode = liveCount > 0;
   allResults = allResults.filter(c => {
     const dot = String(c.dotNumber || '');
     const r = authorityMap[dot];
-    if (!r || r.noMc) return false;        // no MC number — can't run for-hire interstate freight
-    if (r.oos || r.notAllowed) return false; // FMCSA out-of-service or not allowed to operate
-    return r.ca === 'A' || r.ct === 'A';   // require confirmed active common or contract authority
+    if (!r || r.noMc) return false;          // no MC number — can't verify authority
+    if (r.oos || r.notAllowed) return false; // FMCSA out-of-service / not allowed to operate
+    if (liveMode) {
+      return r.ok && (r.ca === 'A' || r.ct === 'A'); // must be CONFIRMED active
+    }
+    return (c._mcStatus || '') === 'A';      // census says active MC authority
   });
 
-  // Attach authority status to each carrier for badge rendering
-  allResults.forEach(c => {
-    const dot = String(c.dotNumber || '');
-    const r = authorityMap[dot];
-    if (r) c._authorityStatus = (r.ca === 'A' || r.ct === 'A') ? 'A' : (r.ca === 'P' || r.ct === 'P') ? 'P' : '';
-  });
+  // Attach authority status for badge rendering — everything left is Active
+  allResults.forEach(c => { c._authorityStatus = 'A'; });
 
   updateStats(allResults);
   renderPage(0, pgSz);
