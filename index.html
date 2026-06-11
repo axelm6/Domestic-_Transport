@@ -616,6 +616,64 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
 #page-asyad .sort-icon{ font-size: 0.65rem; opacity: 0.6; margin-left: 2px; }
 #page-asyad thead th:hover{ background: #1A3A50; }
 #page-asyad .hidden{ display: none; }
+
+/* ═══════════════════════════════════════════════════
+   RD PAGE — layout fixes for tab-embedded context
+═══════════════════════════════════════════════════ */
+
+/* Remove min-height:100vh so the flex height:calc() from .g-page works */
+#page-rd {
+  min-height: 0 !important;
+  height: calc(100vh - 56px);
+  display: none;
+  flex-direction: column;
+}
+#page-rd.active {
+  display: flex !important;
+}
+
+/* Shell must fill remaining space, not expand to viewport */
+#page-rd .shell {
+  min-height: 0 !important;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Sidebar: sticky doesn't work inside overflow:hidden — use normal scroll */
+#page-rd .sidebar {
+  height: 100%;
+  position: relative !important;
+  top: auto !important;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Main column scrolls independently */
+#page-rd .main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Map: explicit px height so Leaflet can measure it regardless of parent state */
+#page-rd #rd-map {
+  width: 100% !important;
+  height: 400px !important;
+  min-height: 400px !important;
+  flex-shrink: 0;
+}
+
+/* Detail panel must be fixed to viewport, not the page-rd div */
+#page-rd .detail-panel {
+  position: fixed !important;
+}
+#page-rd .overlay {
+  position: fixed !important;
+}
+
 </style>
 </head>
 <body>
@@ -629,7 +687,7 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
   </button>
   <button class="g-nav-tab tab-blue" id="tab-rd" onclick="switchToTab('rd')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Restaurant Depot
+    Customer Lanes
   </button>
   <button class="g-nav-tab tab-blue" id="tab-carriers" onclick="switchToTab('carriers')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
@@ -1941,9 +1999,17 @@ function switchToTab(name) {
   if (page) page.classList.add('active');
   if (tab)  tab.classList.add('active');
   if (name === 'rd') {
-    if (typeof initRDPage === 'function') setTimeout(initRDPage, 60);
-    setTimeout(function() { if (typeof rdMap !== 'undefined' && rdMap) rdMap.invalidateSize(); }, 300);
-    setTimeout(function() { if (typeof rdMap !== 'undefined' && rdMap) rdMap.invalidateSize(); }, 800);
+    if (typeof initRDPage === 'function') {
+      setTimeout(initRDPage, 80);
+    }
+    // Multiple invalidateSize calls to handle transition timing
+    [200, 400, 700, 1200].forEach(function(t) {
+      setTimeout(function() {
+        if (typeof rdMap !== 'undefined' && rdMap) {
+          rdMap.invalidateSize({ animate: false });
+        }
+      }, t);
+    });
   }
   if (name === 'carriers') {
     if (typeof initCarriersPage === 'function') setTimeout(initCarriersPage, 60);
