@@ -1932,14 +1932,15 @@ async function apiFetchCarriers(state, limit, offset, entityType) {
 }
 
 function __mapCensusRecord(c) {
-  // Pick the active MC docket first, otherwise any MC docket
-  const mcNum =
-    (c.docket1prefix === 'MC' && c.docket1_status_code === 'A') ? c.docket1 :
-    (c.docket2prefix === 'MC' && c.docket2_status_code === 'A') ? c.docket2 :
-    (c.docket3prefix === 'MC' && c.docket3_status_code === 'A') ? c.docket3 :
-    (c.docket1prefix === 'MC') ? c.docket1 :
-    (c.docket2prefix === 'MC') ? c.docket2 :
-    (c.docket3prefix === 'MC') ? c.docket3 : '';
+  // Collect MC dockets and prefer the one with active status
+  const mcDockets = [
+    [c.docket1prefix, c.docket1, c.docket1_status_code],
+    [c.docket2prefix, c.docket2, c.docket2_status_code],
+    [c.docket3prefix, c.docket3, c.docket3_status_code],
+  ].filter(d => d[0] === 'MC' && d[1]);
+  const activeMc  = mcDockets.find(d => String(d[2] || '').toUpperCase() === 'A');
+  const mcNum     = activeMc ? activeMc[1] : (mcDockets[0] ? mcDockets[0][1] : '');
+  const mcStatus  = activeMc ? 'A' : (mcDockets[0] ? String(mcDockets[0][2] || '').toUpperCase() : '');
   return {
     dotNumber:       c.dot_number    || '',
     legalName:       c.legal_name    || '',
@@ -1955,6 +1956,8 @@ function __mapCensusRecord(c) {
     totalPowerUnits: c.power_units   || '',
     totalDrivers:    c.total_drivers || '',
     docketNumber:    mcNum           || '',
+    statusCode:      String(c.status_code || '').toUpperCase(),
+    _mcStatus:       mcStatus, // 'A' = active MC authority per FMCSA census
   };
 }
 
@@ -1980,6 +1983,10 @@ async function fetchCarriersDirect(state, limit, offset, entityType) {
     res = await fetch(buildUrl(false), { headers: { 'Accept': 'application/json' } });
     if (!res.ok) throw new Error(`FMCSA data service error (HTTP ${res.status})`);
     rows = await res.json();
+    // Still enforce active-only client-side when the record carries a status
+    if (Array.isArray(rows)) {
+      rows = rows.filter(r => !r.status_code || String(r.status_code).toUpperCase() === 'A');
+    }
   }
   const content = (Array.isArray(rows) ? rows : []).map(__mapCensusRecord);
   return { content, total: content.length };
@@ -2369,7 +2376,7 @@ async function verifyThenRender(pgSz, label) {
       <div class="spinner"></div>
       <div class="st">Verifying authority…</div>
       <div class="ss" id="verify-msg" style="font-family:'DM Mono',monospace;font-size:11px;">
-        Checking ${total} carriers with FMCSA…
+        Confirming active MC authority for ${total} carriers with FMCSA…
       </div>
       <div style="height:4px;background:var(--surface2);border-radius:99px;margin:16px auto 0;width:240px;overflow:hidden;">
         <div id="verify-bar" style="height:100%;background:linear-gradient(90deg,#32AAE1,#786EAF);border-radius:99px;width:0%;transition:width 0.3s ease;"></div>
@@ -2391,12 +2398,14 @@ async function verifyThenRender(pgSz, label) {
       }
       try {
         const auth = await apiFetchAuthority(dot);
-        authorityMap[dot] = {
-          ca: (auth.commonAuthorityStatus  || '').toUpperCase(),
-          ct: (auth.contractAuthorityStatus || '').toUpperCase(),
-        };
+        let ca = (auth.commonAuthorityStatus  || '').toUpperCase();
+        let ct = (auth.contractAuthorityStatus || '').toUpperCase();
+        // If the backend authority API gave nothing, fall back to the MC docket
+        // status from the FMCSA census record so inactive authorities still get filtered
+        if (!ca && !ct && c._mcStatus) { ca = c._mcStatus; }
+        authorityMap[dot] = { ca, ct };
       } catch(e) {
-        authorityMap[dot] = { ca: '', ct: '' };
+        authorityMap[dot] = { ca: (c._mcStatus || ''), ct: '' };
       }
       done++;
       const pct = Math.round((done / total) * 100);
@@ -2407,17 +2416,14 @@ async function verifyThenRender(pgSz, label) {
     }));
   }
 
-  // Filter: keep only Active, Pending, no-MC (can't verify), or unknown API response
-  // Only drop if EXPLICITLY confirmed inactive (ca=I or ct=I, and neither is A)
+  // STRICT MODE — professional-grade list quality:
+  // only carriers with an MC number whose authority is confirmed ACTIVE are shown.
+  // No-MC, pending, inactive, and unverifiable carriers are all excluded.
   allResults = allResults.filter(c => {
     const dot = String(c.dotNumber || '');
     const r = authorityMap[dot];
-    if (!r || r.noMc) return true; // no MC — keep, can't verify
-    if (!r.ca && !r.ct) return true; // API returned nothing — keep, fail safe
-    const isActive  = r.ca === 'A' || r.ct === 'A';
-    const isPending = r.ca === 'P' || r.ct === 'P';
-    const confirmedInactive = !isActive && !isPending && (r.ca === 'I' || r.ct === 'I');
-    return !confirmedInactive;
+    if (!r || r.noMc) return false;        // no MC number — can't run for-hire interstate freight
+    return r.ca === 'A' || r.ct === 'A';   // require confirmed active common or contract authority
   });
 
   // Attach authority status to each carrier for badge rendering
