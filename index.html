@@ -503,6 +503,17 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
 #page-asyad .sort-icon{ font-size: 0.65rem; opacity: 0.6; margin-left: 2px; }
 #page-asyad thead th:hover{ background: #1A3A50; }
 #page-asyad .hidden{ display: none; }
+
+/* ── Hub click fix: remove min-height that causes invisible overflow ── */
+#page-hub {
+  min-height: 0 !important;
+}
+/* Ensure hub cards are always clickable */
+#page-hub .tool-card {
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
 </style>
 </head>
 <body>
@@ -562,13 +573,13 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
   <div class="card-grid">
 
     <!-- Restaurant Depot -->
-    <a class="tool-card card-pink" href="#" onclick="switchToTab('rd'); return false;">
+    <a class="tool-card card-pink" href="javascript:void(0)" onclick="switchToTab('rd')">
       <div class="card-header">
         <div class="card-icon icon-pink">🗺️</div>
         <span class="card-badge badge-live">● Live</span>
       </div>
       <div class="card-body">
-        <div class="card-title">Restaurant Depot</div>
+        <div class="card-title">Customer Lanes</div>
         <div class="card-desc">Interactive lane map tracking 90 ongoing lanes and 26 verified tenders since April 2026. Filter by origin hub, layer by lane type, view state coverage.</div>
       </div>
       <div class="card-tags">
@@ -584,7 +595,7 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
     </a>
 
     <!-- CarrierNet -->
-    <a class="tool-card card-blue" href="#" onclick="switchToTab('carriers'); return false;">
+    <a class="tool-card card-blue" href="javascript:void(0)" onclick="switchToTab('carriers')">
       <div class="card-header">
         <div class="card-icon icon-blue">🚛</div>
         <span class="card-badge badge-live">● Live</span>
@@ -606,7 +617,7 @@ html, body { margin:0; padding:0; font-family:'Nunito',sans-serif; background:#F
     </a>
 
     <!-- Asyad Pipeline -->
-    <a class="tool-card card-orange" href="#" onclick="switchToTab('asyad'); return false;">
+    <a class="tool-card card-orange" href="javascript:void(0)" onclick="switchToTab('asyad')">
       <div class="card-header">
         <div class="card-icon icon-orange">🌍</div>
         <span class="card-badge badge-live">● Live</span>
