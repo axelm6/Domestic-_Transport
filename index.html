@@ -478,7 +478,7 @@ const STATE_NAME_TO_ABBR = {
   'District of Columbia':'DC'
 };
 
-let activeYear='all', activeMonth='all', custF='', carrF='', stateF='', srchQ='';
+let activeYear='all', activeMonths=new Set(), custF='', carrF='', stateF='', srchQ=''; // empty Set = All
 let origCtryFilter='all', destCtryFilter='all';
 
 // US state codes (2-letter, excluding Canadian/Mexican 2-letter codes)
@@ -648,7 +648,7 @@ function applyFilters(){
   rows.forEach(tr=>{
     let show=true;
     if(activeYear!=='all' && tr.dataset.year!==activeYear) show=false;
-    if(activeMonth!=='all' && tr.dataset.month!==activeMonth) show=false;
+    if(activeMonths.size>0 && !activeMonths.has(tr.dataset.month)) show=false;
     if(custF && tr.dataset.cust!==custF.toLowerCase()) show=false;
     if(carrF && tr.dataset.carr!==carrF.toLowerCase()) show=false;
     if(stateF && tr.dataset.ostate!==stateF) show=false;
@@ -683,10 +683,21 @@ document.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',(
   b.classList.add('y-active'); applyFilters();
 }));
 document.querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',()=>{
-  const wasActive=b.classList.contains('m-active');
-  document.querySelectorAll('[data-month]').forEach(x=>x.classList.remove('m-active'));
-  if(!wasActive){ b.classList.add('m-active'); activeMonth=b.dataset.month; }
-  else{ document.querySelector('[data-month="all"]').classList.add('m-active'); activeMonth='all'; }
+  const m=b.dataset.month;
+  if(m==='all'){
+    // All resets everything
+    activeMonths.clear();
+    document.querySelectorAll('[data-month]').forEach(x=>x.classList.remove('m-active'));
+    document.querySelector('[data-month="all"]').classList.add('m-active');
+  } else {
+    // Toggle this month
+    if(activeMonths.has(m)){ activeMonths.delete(m); b.classList.remove('m-active'); }
+    else { activeMonths.add(m); b.classList.add('m-active'); }
+    // Keep All highlighted only when nothing selected
+    const allBtn=document.querySelector('[data-month="all"]');
+    if(activeMonths.size===0){ allBtn.classList.add('m-active'); }
+    else { allBtn.classList.remove('m-active'); }
+  }
   applyFilters();
 }));
 document.getElementById('custSel').addEventListener('change',e=>{custF=e.target.value;applyFilters();});
