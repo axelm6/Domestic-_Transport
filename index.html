@@ -120,8 +120,9 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
 
 /* Custom multi-select dropdown */
 .ms-wrap{position:relative;display:inline-block;}
-.ms-pill{font-family:'DM Sans',sans-serif;font-size:0.73rem;color:var(--text);border:1px solid var(--border);border-radius:100px;padding:0.25rem 1.6rem 0.25rem 0.65rem;background:var(--white);cursor:pointer;outline:none;white-space:nowrap;user-select:none;min-width:110px;max-width:220px;overflow:hidden;text-overflow:ellipsis;position:relative;}
-.ms-pill::after{content:'▾';position:absolute;right:0.55rem;top:50%;transform:translateY(-50%);font-size:0.6rem;color:var(--sub);pointer-events:none;}
+.ms-pill{font-family:'DM Sans',sans-serif;font-size:0.73rem;color:var(--text);border:1px solid var(--border);border-radius:100px;padding:0.25rem 1.6rem 0.25rem 0.65rem;background:var(--white);cursor:pointer;outline:none;white-space:nowrap;user-select:none;min-width:110px;max-width:220px;overflow:hidden;text-overflow:ellipsis;position:relative;display:inline-flex;align-items:center;}
+.ms-pill::after{content:'▾';position:absolute;right:0.55rem;top:50%;transform:translateY(-50%);font-size:0.6rem;color:inherit;pointer-events:none;}
+.ms-pill-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ms-pill.has-sel{border-color:var(--teal);color:var(--teal);font-weight:600;}
 .ms-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:9999;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.13);min-width:200px;max-width:280px;overflow:hidden;}
 .ms-dropdown.open{display:block;}
@@ -224,7 +225,7 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
       </div>
       <div class="drawer-controls">
         <div class="ms-wrap" id="wrap-cust">
-  <div class="ms-pill" id="pill-cust" onclick="toggleMs('cust')">— Customer —</div>
+  <div class="ms-pill" id="pill-cust" onclick="toggleMs('cust')"><span class="ms-pill-txt">— Customer —</span></div>
   <div class="ms-dropdown" id="dd-cust">
     <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('cust',this.value)" onclick="event.stopPropagation()">
     <div class="ms-list" id="list-cust">
@@ -270,7 +271,7 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
   </div>
 </div>
         <div class="ms-wrap" id="wrap-carr">
-  <div class="ms-pill" id="pill-carr" onclick="toggleMs('carr')">— Carrier —</div>
+  <div class="ms-pill" id="pill-carr" onclick="toggleMs('carr')"><span class="ms-pill-txt">— Carrier —</span></div>
   <div class="ms-dropdown" id="dd-carr">
     <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('carr',this.value)" onclick="event.stopPropagation()">
     <div class="ms-list" id="list-carr">
@@ -364,7 +365,7 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
   </div>
 </div>
         <div class="ms-wrap" id="wrap-orig">
-  <div class="ms-pill" id="pill-orig" onclick="toggleMs('orig')">— Origin State —</div>
+  <div class="ms-pill" id="pill-orig" onclick="toggleMs('orig')"><span class="ms-pill-txt">— Origin State —</span></div>
   <div class="ms-dropdown" id="dd-orig">
     <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('orig',this.value)" onclick="event.stopPropagation()">
     <div class="ms-list" id="list-orig">
@@ -424,7 +425,7 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
   </div>
 </div>
         <div class="ms-wrap" id="wrap-dest">
-  <div class="ms-pill" id="pill-dest" onclick="toggleMs('dest')">— Dest State —</div>
+  <div class="ms-pill" id="pill-dest" onclick="toggleMs('dest')"><span class="ms-pill-txt">— Dest State —</span></div>
   <div class="ms-dropdown" id="dd-dest">
     <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('dest',this.value)" onclick="event.stopPropagation()">
     <div class="ms-list" id="list-dest">
@@ -620,10 +621,7 @@ function stateCountry(s){
 
 let map, arcLayers=[], dotLayers=[], statesGeoLayer=null, selectedRow=null, drawerOpen=true;
 
-// Populate origin state dropdown
-const stateSet=[...new Set(ALL.map(r=>r.origState).filter(Boolean))].sort();
-const ss=document.getElementById('stateSel');
-stateSet.forEach(s=>{ const o=document.createElement('option');o.value=s;o.textContent=s;ss.appendChild(o); });
+// Origin state options are pre-built in HTML
 
 // Build table rows
 const tbody=document.getElementById('tbody');
@@ -910,22 +908,20 @@ function clearMs(id){
 function updatePill(id){
   const cfg=msFilters[id];
   const pill=document.getElementById('pill-'+id);
+  const txt=pill.querySelector('.ms-pill-txt');
   const labels={'cust':'— Customer —','carr':'— Carrier —','orig':'— Origin State —','dest':'— Dest State —'};
   if(cfg.set.size===0){
-    pill.textContent=labels[id];
+    txt.textContent=labels[id];
     pill.classList.remove('has-sel');
   } else if(cfg.set.size===1){
     const v=[...cfg.set][0];
-    // Find display label
-    const item=document.querySelector('#list-'+id+' .ms-item:not(.ms-all) input[value="'+v+'"]');
-    pill.textContent=item ? item.parentElement.querySelector('span').textContent : v;
+    const item=document.querySelector('#list-'+id+' .ms-item:not(.ms-all) input[value="'+CSS.escape(v)+'"]');
+    txt.textContent=item ? item.parentElement.querySelector('span').textContent : v;
     pill.classList.add('has-sel');
   } else {
-    pill.textContent=cfg.set.size+' selected';
+    txt.textContent=cfg.set.size+' selected';
     pill.classList.add('has-sel');
   }
-  // Fix arrow (pill.textContent clobbers ::after so use dataset trick)
-  pill.setAttribute('data-label', pill.textContent);
 }
 
 // Wire checkboxes for all four dropdowns
