@@ -478,8 +478,8 @@ const STATE_NAME_TO_ABBR = {
   'District of Columbia':'DC'
 };
 
-let activeYear='all', activeMonths=new Set(), custF='', carrF='', stateF='', srchQ=''; // empty Set = All
-let origCtryFilter='all', destCtryFilter='all';
+let activeYears=new Set(), activeMonths=new Set(), custF='', carrF='', stateF='', srchQ=''; // empty Set = All
+let origCtryFilter=new Set(), destCtryFilter=new Set(); // empty = All
 
 // US state codes (2-letter, excluding Canadian/Mexican 2-letter codes)
 const US_SET=new Set(['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA',
@@ -647,14 +647,14 @@ function applyFilters(){
   const vC=new Set(), vK=new Set();
   rows.forEach(tr=>{
     let show=true;
-    if(activeYear!=='all' && tr.dataset.year!==activeYear) show=false;
+    if(activeYears.size>0 && !activeYears.has(tr.dataset.year)) show=false;
     if(activeMonths.size>0 && !activeMonths.has(tr.dataset.month)) show=false;
     if(custF && tr.dataset.cust!==custF.toLowerCase()) show=false;
     if(carrF && tr.dataset.carr!==carrF.toLowerCase()) show=false;
     if(stateF && tr.dataset.ostate!==stateF) show=false;
     if(srchQ && !tr.dataset.srch.includes(srchQ)) show=false;
-    if(origCtryFilter!=='all' && stateCountry(tr.dataset.ostate)!==origCtryFilter) show=false;
-    if(destCtryFilter!=='all' && stateCountry(tr.dataset.dstate)!==destCtryFilter) show=false;    tr.classList.toggle('hidden',!show);
+    if(origCtryFilter.size>0 && !origCtryFilter.has(stateCountry(tr.dataset.ostate))) show=false;
+    if(destCtryFilter.size>0 && !destCtryFilter.has(stateCountry(tr.dataset.dstate))) show=false;    tr.classList.toggle('hidden',!show);
     if(show){
       vis.push(ALL[+tr.dataset.i]);
       yc[+tr.dataset.year]++;
@@ -678,9 +678,19 @@ function applyFilters(){
 
 // Wire sidebar
 document.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>{
-  activeYear=b.dataset.year;
-  document.querySelectorAll('[data-year]').forEach(x=>x.classList.remove('y-active'));
-  b.classList.add('y-active'); applyFilters();
+  const y=b.dataset.year;
+  if(y==='all'){
+    activeYears.clear();
+    document.querySelectorAll('[data-year]').forEach(x=>x.classList.remove('y-active'));
+    document.querySelector('[data-year="all"]').classList.add('y-active');
+  } else {
+    if(activeYears.has(y)){ activeYears.delete(y); b.classList.remove('y-active'); }
+    else { activeYears.add(y); b.classList.add('y-active'); }
+    const allBtn=document.querySelector('[data-year="all"]');
+    if(activeYears.size===0){ allBtn.classList.add('y-active'); }
+    else { allBtn.classList.remove('y-active'); }
+  }
+  applyFilters();
 }));
 document.querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',()=>{
   const m=b.dataset.month;
@@ -706,26 +716,26 @@ document.getElementById('stateSel').addEventListener('change',e=>{stateF=e.targe
 document.getElementById('srch').addEventListener('input',e=>{srchQ=e.target.value.toLowerCase().trim();applyFilters();});
 
 // Country filter buttons
-function setOrigCtry(val){
-  origCtryFilter=val;
-  ['co-all','co-us','co-ca','co-mx'].forEach(id=>document.getElementById(id).classList.remove('c-on'));
-  document.getElementById('co-'+(val==='all'?'all':val.toLowerCase())).classList.add('c-on');
-  applyFilters();
+function wireCtryBtns(prefix, filterSet){
+  document.getElementById(prefix+'-all').addEventListener('click',()=>{
+    filterSet.clear();
+    ['all','us','ca','mx'].forEach(v=>document.getElementById(prefix+'-'+v).classList.remove('c-on'));
+    document.getElementById(prefix+'-all').classList.add('c-on');
+    applyFilters();
+  });
+  ['us','ca','mx'].forEach(v=>{
+    document.getElementById(prefix+'-'+v).addEventListener('click',()=>{
+      const val=v.toUpperCase();
+      if(filterSet.has(val)){ filterSet.delete(val); document.getElementById(prefix+'-'+v).classList.remove('c-on'); }
+      else { filterSet.add(val); document.getElementById(prefix+'-'+v).classList.add('c-on'); }
+      const allBtn=document.getElementById(prefix+'-all');
+      if(filterSet.size===0){ allBtn.classList.add('c-on'); } else { allBtn.classList.remove('c-on'); }
+      applyFilters();
+    });
+  });
 }
-function setDestCtry(val){
-  destCtryFilter=val;
-  ['cd-all','cd-us','cd-ca','cd-mx'].forEach(id=>document.getElementById(id).classList.remove('c-on'));
-  document.getElementById('cd-'+(val==='all'?'all':val.toLowerCase())).classList.add('c-on');
-  applyFilters();
-}
-document.getElementById('co-all').addEventListener('click',()=>setOrigCtry('all'));
-document.getElementById('co-us').addEventListener('click',()=>setOrigCtry('US'));
-document.getElementById('co-ca').addEventListener('click',()=>setOrigCtry('CA'));
-document.getElementById('co-mx').addEventListener('click',()=>setOrigCtry('MX'));
-document.getElementById('cd-all').addEventListener('click',()=>setDestCtry('all'));
-document.getElementById('cd-us').addEventListener('click',()=>setDestCtry('US'));
-document.getElementById('cd-ca').addEventListener('click',()=>setDestCtry('CA'));
-document.getElementById('cd-mx').addEventListener('click',()=>setDestCtry('MX'));
+wireCtryBtns('co', origCtryFilter);
+wireCtryBtns('cd', destCtryFilter);
 
 </script>
 </body>
