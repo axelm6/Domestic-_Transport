@@ -117,6 +117,21 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
 /* Leaflet */
 .leaflet-tooltip.state-label{background:transparent;border:none;box-shadow:none;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:#2c3e50;padding:0;pointer-events:none;}
 .leaflet-tooltip.lane-tip{background:rgba(13,34,51,0.88);color:#fff;border:none;font-family:'DM Mono',monospace;font-size:0.63rem;padding:4px 8px;border-radius:4px;box-shadow:none;}
+
+/* Custom multi-select dropdown */
+.ms-wrap{position:relative;display:inline-block;}
+.ms-pill{font-family:'DM Sans',sans-serif;font-size:0.73rem;color:var(--text);border:1px solid var(--border);border-radius:100px;padding:0.25rem 1.6rem 0.25rem 0.65rem;background:var(--white);cursor:pointer;outline:none;white-space:nowrap;user-select:none;min-width:110px;max-width:220px;overflow:hidden;text-overflow:ellipsis;position:relative;}
+.ms-pill::after{content:'▾';position:absolute;right:0.55rem;top:50%;transform:translateY(-50%);font-size:0.6rem;color:var(--sub);pointer-events:none;}
+.ms-pill.has-sel{border-color:var(--teal);color:var(--teal);font-weight:600;}
+.ms-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:9999;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.13);min-width:200px;max-width:280px;overflow:hidden;}
+.ms-dropdown.open{display:block;}
+.ms-search{width:100%;border:none;border-bottom:1px solid var(--border);padding:0.4rem 0.7rem;font-family:'DM Sans',sans-serif;font-size:0.73rem;outline:none;color:var(--text);}
+.ms-list{max-height:220px;overflow-y:auto;padding:0.3rem 0;}
+.ms-item{display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0.7rem;font-size:0.73rem;font-family:'DM Sans',sans-serif;cursor:pointer;color:var(--text);transition:background 0.1s;}
+.ms-item:hover{background:var(--bg);}
+.ms-item input[type=checkbox]{accent-color:var(--teal);cursor:pointer;flex-shrink:0;}
+.ms-item.ms-all{font-weight:600;color:var(--navy);border-bottom:1px solid var(--border);padding-bottom:0.4rem;margin-bottom:0.15rem;}
+.ms-item.hidden{display:none;}
 </style>
 </head>
 <body>
@@ -208,182 +223,273 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
         <span class="drawer-toggle open" id="drawerToggle">▲</span>
       </div>
       <div class="drawer-controls">
-        <select class="ctrl-sel" id="custSel" multiple>
-<option value="" selected>— All Customers —</option>
-<option value="1 click logistics">1 Click Logistics</option>
-<option value="aborder products inc">Aborder Products Inc</option>
-<option value="aclsa llc dba redsmith graphic solutions">Aclsa Llc Dba Redsmith Graphic Solutions</option>
-<option value="applied digital">Applied Digital</option>
-<option value="axalta coating systems, llc">Axalta Coating Systems, Llc</option>
-<option value="bailey pottery equipment">Bailey Pottery Equipment</option>
-<option value="california daries inc.">California Daries Inc.</option>
-<option value="cardinal health (dba optifreight)">Cardinal Health (Dba Optifreight)</option>
-<option value="carl vogel">Carl Vogel</option>
-<option value="common cents ems supply llc">Common Cents Ems Supply Llc</option>
-<option value="connell usa llc">Connell Usa Llc</option>
-<option value="cooperative regions of organic producer pools">Cooperative Regions Of Organic Producer Pools</option>
-<option value="core & main lp">Core & Main Lp</option>
-<option value="cts corporation">Cts Corporation</option>
-<option value="enorise americas llc">Enorise Americas Llc</option>
-<option value="evo logistic">Evo Logistic</option>
-<option value="factor bikes usa llc">Factor Bikes Usa Llc</option>
-<option value="fala technologies inc.">Fala Technologies Inc.</option>
-<option value="floraflex corp">Floraflex Corp</option>
-<option value="fruit master farm operations pty ltd">Fruit Master Farm Operations Pty Ltd</option>
-<option value="goodpack usa">Goodpack Usa</option>
-<option value="green innovations">Green Innovations</option>
-<option value="grit transportation services, llc">Grit Transportation Services, Llc</option>
-<option value="h. c. schmieding produce company, llc">H. C. Schmieding Produce Company, Llc</option>
-<option value="h2o weld llc">H2O Weld Llc</option>
-<option value="integrated vendor group">Integrated Vendor Group</option>
-<option value="kmm telecommunications">Kmm Telecommunications</option>
-<option value="la foods">La Foods</option>
-<option value="lions investment & trading inc (dba lions floor)">Lions Investment & Trading Inc (Dba Lions Floor)</option>
-<option value="louis dreyfus company cotton llc">Louis Dreyfus Company Cotton Llc</option>
-<option value="maple press company">Maple Press Company</option>
-<option value="mowi usa, llc (dba marine harvest usa, llc)">Mowi Usa, Llc (Dba Marine Harvest Usa, Llc)</option>
-<option value="netsync network solutions">Netsync Network Solutions</option>
-<option value="oliver's diesel specialist">Oliver'S Diesel Specialist</option>
-<option value="professional traffic control, llc">Professional Traffic Control, Llc</option>
-<option value="restaurant depot llc">Restaurant Depot Llc</option>
-<option value="wright coating company, inc.">Wright Coating Company, Inc.</option>
-</select>
-        <select class="ctrl-sel" id="carrSel"><option value="">— Carrier —</option><option value="1ST IN LINE LOGISTICS LLC">1ST IN LINE LOGISTICS LLC</option>
-<option value="Acme Truck Line, Inc.">Acme Truck Line, Inc.</option>
-<option value="Almata Trucking LLC">Almata Trucking LLC</option>
-<option value="BMA Trucking Services, INC.">BMA Trucking Services, INC.</option>
-<option value="C&H UNITED TRUCKING INC">C&H UNITED TRUCKING INC</option>
-<option value="CALHOUN TRUCK LINES">CALHOUN TRUCK LINES</option>
-<option value="CANO & SONS">CANO & SONS</option>
-<option value="CASGO LOGISTIC LLC">CASGO LOGISTIC LLC</option>
-<option value="CASGO LOGISTIC LLC + TRANSPORTES H&H">CASGO LOGISTIC LLC + TRANSPORTES H&H</option>
-<option value="Convoy Logistics LLC">Convoy Logistics LLC</option>
-<option value="Convoy Logistics LLC + UCW LOGISTICS LLC">Convoy Logistics LLC + UCW LOGISTICS LLC</option>
-<option value="DAB Trucking Services">DAB Trucking Services</option>
-<option value="DIALVAN INC + TRANSPORTES H&H">DIALVAN INC + TRANSPORTES H&H</option>
-<option value="Dynamic One Logistics">Dynamic One Logistics</option>
-<option value="E RUN 13 CORPORATION + TRANSPORTES H&H">E RUN 13 CORPORATION + TRANSPORTES H&H</option>
-<option value="E&A Trans - ORD">E&A Trans - ORD</option>
-<option value="ERMILO E RICHER AGENICA ADUANA">ERMILO E RICHER AGENICA ADUANA</option>
-<option value="Evans Delivery Company">Evans Delivery Company</option>
-<option value="ExFreight Zeta LLC">ExFreight Zeta LLC</option>
-<option value="ExFreight Zeta LLC + HUBBARD EXPRESS AIR FREIGHT &">ExFreight Zeta LLC + HUBBARD EXPRESS AIR FREIGHT &</option>
-<option value="ExFreight Zeta LLC + NEXT GEN C/O DIRECT FREIGHT ST">ExFreight Zeta LLC + NEXT GEN C/O DIRECT FREIGHT ST</option>
-<option value="FF C/O MKS SERVICES, LLC + ExFreight Zeta LLC">FF C/O MKS SERVICES, LLC + ExFreight Zeta LLC</option>
-<option value="FFE Transportation Services, Inc.">FFE Transportation Services, Inc.</option>
-<option value="FFE Transportation Services, Inc. + GlobalTranz Enterprises, LLC">FFE Transportation Services, Inc. + GlobalTranz Enterprises, LLC</option>
-<option value="FORZA TRANSPORTATION SERVICES">FORZA TRANSPORTATION SERVICES</option>
-<option value="FORZA TRANSPORTATION SERVICES + RG FREIGHT LLC">FORZA TRANSPORTATION SERVICES + RG FREIGHT LLC</option>
-<option value="FORZA TRANSPORTATION SERVICES + VAQUERO RIDERS INC">FORZA TRANSPORTATION SERVICES + VAQUERO RIDERS INC</option>
-<option value="FOX' S TRANSPORT, INC.">FOX' S TRANSPORT, INC.</option>
-<option value="Gary Express LLC">Gary Express LLC</option>
-<option value="GlobalTranz Enterprises, LLC">GlobalTranz Enterprises, LLC</option>
-<option value="Globaltranz">Globaltranz</option>
-<option value="Grupo Rechy">Grupo Rechy</option>
-<option value="HIRSCHBACH TRANSPORTATION SERV">HIRSCHBACH TRANSPORTATION SERV</option>
-<option value="HUBBARD EXPRESS AIR FREIGHT &">HUBBARD EXPRESS AIR FREIGHT &</option>
-<option value="HUBBARD EXPRESS AIR FREIGHT & + ExFreight Zeta LLC">HUBBARD EXPRESS AIR FREIGHT & + ExFreight Zeta LLC</option>
-<option value="HUBBARD EXPRESS AIR FREIGHT & + UCW LOGISTICS LLC">HUBBARD EXPRESS AIR FREIGHT & + UCW LOGISTICS LLC</option>
-<option value="Hubbard Express AUS">Hubbard Express AUS</option>
-<option value="INDELIBLE LOGISTICS LLC">INDELIBLE LOGISTICS LLC</option>
-<option value="IRONHORSE MOTOR FREIGHT INC">IRONHORSE MOTOR FREIGHT INC</option>
-<option value="J&A Transport">J&A Transport</option>
-<option value="J. B. Hunt">J. B. Hunt</option>
-<option value="JERRY D FLANAGAN DBA PHER TRUCKING">JERRY D FLANAGAN DBA PHER TRUCKING</option>
-<option value="JORSTIN TRANSPORTATION SERVICE">JORSTIN TRANSPORTATION SERVICE</option>
-<option value="LCG FREIGHT INC">LCG FREIGHT INC</option>
-<option value="LYKES CARTAGE - AMA + ExFreight Zeta LLC">LYKES CARTAGE - AMA + ExFreight Zeta LLC</option>
-<option value="LYKES CARTAGE - AUS">LYKES CARTAGE - AUS</option>
-<option value="LYKES CARTAGE - IAH + ExFreight Zeta LLC">LYKES CARTAGE - IAH + ExFreight Zeta LLC</option>
-<option value="MILLENIUM LOGISTICS + GlobalTranz Enterprises, LLC">MILLENIUM LOGISTICS + GlobalTranz Enterprises, LLC</option>
-<option value="MILLENIUM LOGISTICS + Mainline Logistics + UCW LOGISTICS LLC">MILLENIUM LOGISTICS + Mainline Logistics + UCW LOGISTICS LLC</option>
-<option value="MILLENIUM LOGISTICS + UCW LOGISTICS LLC">MILLENIUM LOGISTICS + UCW LOGISTICS LLC</option>
-<option value="MOUNT VISTA TRANSPORT LLC">MOUNT VISTA TRANSPORT LLC</option>
-<option value="MVM LOGISTICS">MVM LOGISTICS</option>
-<option value="NEXT GEN C/O ARETE TRADE DBA N">NEXT GEN C/O ARETE TRADE DBA N</option>
-<option value="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC">NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC</option>
-<option value="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC + UCW LOGISTICS LLC">NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC + UCW LOGISTICS LLC</option>
-<option value="NEXT GEN C/O DIRECT FREIGHT ST">NEXT GEN C/O DIRECT FREIGHT ST</option>
-<option value="NEXT GEN C/O DIRECT FREIGHT ST + ExFreight Zeta LLC">NEXT GEN C/O DIRECT FREIGHT ST + ExFreight Zeta LLC</option>
-<option value="NEXT GEN C/O GroundTrans Logistics">NEXT GEN C/O GroundTrans Logistics</option>
-<option value="NEXT GEN C/O SAMU GROUP SERVIC">NEXT GEN C/O SAMU GROUP SERVIC</option>
-<option value="NEXT GEN C/O SAMU GROUP SERVIC + ExFreight Zeta LLC">NEXT GEN C/O SAMU GROUP SERVIC + ExFreight Zeta LLC</option>
-<option value="NEXT GEN C/O TYLER TRANSPORT + ExFreight Zeta LLC">NEXT GEN C/O TYLER TRANSPORT + ExFreight Zeta LLC</option>
-<option value="NEXTGEN C/O GATEWAY TRANSPORTA + ExFreight Zeta LLC">NEXTGEN C/O GATEWAY TRANSPORTA + ExFreight Zeta LLC</option>
-<option value="NEXWAY LOGISTICS INC">NEXWAY LOGISTICS INC</option>
-<option value="OVERLAND EXPRESS COMPANY">OVERLAND EXPRESS COMPANY</option>
-<option value="PRO TRANSPORT LTD">PRO TRANSPORT LTD</option>
-<option value="Perfect Logistics">Perfect Logistics</option>
-<option value="ROCKFORT TRANSPORTATION LLC">ROCKFORT TRANSPORTATION LLC</option>
-<option value="SOLID TRANSPORTATION SERVICES INC">SOLID TRANSPORTATION SERVICES INC</option>
-<option value="STRTR LOGISTICS LLC">STRTR LOGISTICS LLC</option>
-<option value="SWIFT TRANSPORTATION SERVICES, LLC">SWIFT TRANSPORTATION SERVICES, LLC</option>
-<option value="ShipNova LLC">ShipNova LLC</option>
-<option value="Smith Transportation">Smith Transportation</option>
-<option value="TRANCASA USA INC">TRANCASA USA INC</option>
-<option value="TRANSPORTES H&H">TRANSPORTES H&H</option>
-<option value="TRANSPORTES H&H + VAQUERO RIDERS INC">TRANSPORTES H&H + VAQUERO RIDERS INC</option>
-<option value="TRUER LOGISTICS AND TRAFFIC SE">TRUER LOGISTICS AND TRAFFIC SE</option>
-<option value="Taylor Logistics Inc">Taylor Logistics Inc</option>
-<option value="Triple Crown Freight c/o Margin Freight">Triple Crown Freight c/o Margin Freight</option>
-<option value="UCW LOGISTICS LLC">UCW LOGISTICS LLC</option>
-<option value="V & O CARRIERS LLC">V & O CARRIERS LLC</option>
-<option value="VAQUERO RIDERS INC">VAQUERO RIDERS INC</option>
-<option value="VMC CARRIERS INC">VMC CARRIERS INC</option>
-<option value="WYCHE TRUCKING LLC">WYCHE TRUCKING LLC</option>
-<option value="X TRANS INC">X TRANS INC</option>
-<option value="XCF">XCF</option></select>
-        <select class="ctrl-sel" id="stateSel"><option value="">— Origin State —</option><option value="AL">AL</option>
-<option value="AR">AR</option>
-<option value="AZ">AZ</option>
-<option value="BC">BC</option>
-<option value="CA">CA</option>
-<option value="CHH">CHH</option>
-<option value="CO">CO</option>
-<option value="DC">DC</option>
-<option value="FL">FL</option>
-<option value="GA">GA</option>
-<option value="HID">HID</option>
-<option value="IA">IA</option>
-<option value="IL">IL</option>
-<option value="IN">IN</option>
-<option value="KS">KS</option>
-<option value="KY">KY</option>
-<option value="LA">LA</option>
-<option value="MA">MA</option>
-<option value="MD">MD</option>
-<option value="MI">MI</option>
-<option value="MN">MN</option>
-<option value="MO">MO</option>
-<option value="MOR">MOR</option>
-<option value="MS">MS</option>
-<option value="NC">NC</option>
-<option value="ND">ND</option>
-<option value="NH">NH</option>
-<option value="NJ">NJ</option>
-<option value="NL">NL</option>
-<option value="NLE">NLE</option>
-<option value="NM">NM</option>
-<option value="NS">NS</option>
-<option value="NV">NV</option>
-<option value="NY">NY</option>
-<option value="OH">OH</option>
-<option value="OK">OK</option>
-<option value="ON">ON</option>
-<option value="OR">OR</option>
-<option value="PA">PA</option>
-<option value="QC">QC</option>
-<option value="SC">SC</option>
-<option value="SD">SD</option>
-<option value="TN">TN</option>
-<option value="TX">TX</option>
-<option value="UT">UT</option>
-<option value="VA">VA</option>
-<option value="VC">VC</option>
-<option value="VT">VT</option>
-<option value="WA">WA</option>
-<option value="WI">WI</option>
-<option value="WY">WY</option></select>
+        <div class="ms-wrap" id="wrap-cust">
+  <div class="ms-pill" id="pill-cust" onclick="toggleMs('cust')">— Customer —</div>
+  <div class="ms-dropdown" id="dd-cust">
+    <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('cust',this.value)" onclick="event.stopPropagation()">
+    <div class="ms-list" id="list-cust">
+      <div class="ms-item ms-all" onclick="clearMs('cust');event.stopPropagation()"><input type="checkbox" id="all-cust" checked><span>All</span></div>
+<div class="ms-item" data-val="1 click logistics"><input type="checkbox" value="1 click logistics"><span>1 Click Logistics</span></div>
+<div class="ms-item" data-val="aborder products inc"><input type="checkbox" value="aborder products inc"><span>Aborder Products Inc</span></div>
+<div class="ms-item" data-val="aclsa llc dba redsmith graphic solutions"><input type="checkbox" value="aclsa llc dba redsmith graphic solutions"><span>Aclsa Llc Dba Redsmith Graphic Solutions</span></div>
+<div class="ms-item" data-val="applied digital"><input type="checkbox" value="applied digital"><span>Applied Digital</span></div>
+<div class="ms-item" data-val="axalta coating systems, llc"><input type="checkbox" value="axalta coating systems, llc"><span>Axalta Coating Systems, Llc</span></div>
+<div class="ms-item" data-val="bailey pottery equipment"><input type="checkbox" value="bailey pottery equipment"><span>Bailey Pottery Equipment</span></div>
+<div class="ms-item" data-val="california daries inc."><input type="checkbox" value="california daries inc."><span>California Daries Inc.</span></div>
+<div class="ms-item" data-val="cardinal health (dba optifreight)"><input type="checkbox" value="cardinal health (dba optifreight)"><span>Cardinal Health (Dba Optifreight)</span></div>
+<div class="ms-item" data-val="carl vogel"><input type="checkbox" value="carl vogel"><span>Carl Vogel</span></div>
+<div class="ms-item" data-val="common cents ems supply llc"><input type="checkbox" value="common cents ems supply llc"><span>Common Cents Ems Supply Llc</span></div>
+<div class="ms-item" data-val="connell usa llc"><input type="checkbox" value="connell usa llc"><span>Connell Usa Llc</span></div>
+<div class="ms-item" data-val="cooperative regions of organic producer pools"><input type="checkbox" value="cooperative regions of organic producer pools"><span>Cooperative Regions Of Organic Producer Pools</span></div>
+<div class="ms-item" data-val="core & main lp"><input type="checkbox" value="core & main lp"><span>Core & Main Lp</span></div>
+<div class="ms-item" data-val="cts corporation"><input type="checkbox" value="cts corporation"><span>Cts Corporation</span></div>
+<div class="ms-item" data-val="enorise americas llc"><input type="checkbox" value="enorise americas llc"><span>Enorise Americas Llc</span></div>
+<div class="ms-item" data-val="evo logistic"><input type="checkbox" value="evo logistic"><span>Evo Logistic</span></div>
+<div class="ms-item" data-val="factor bikes usa llc"><input type="checkbox" value="factor bikes usa llc"><span>Factor Bikes Usa Llc</span></div>
+<div class="ms-item" data-val="fala technologies inc."><input type="checkbox" value="fala technologies inc."><span>Fala Technologies Inc.</span></div>
+<div class="ms-item" data-val="floraflex corp"><input type="checkbox" value="floraflex corp"><span>Floraflex Corp</span></div>
+<div class="ms-item" data-val="fruit master farm operations pty ltd"><input type="checkbox" value="fruit master farm operations pty ltd"><span>Fruit Master Farm Operations Pty Ltd</span></div>
+<div class="ms-item" data-val="goodpack usa"><input type="checkbox" value="goodpack usa"><span>Goodpack Usa</span></div>
+<div class="ms-item" data-val="green innovations"><input type="checkbox" value="green innovations"><span>Green Innovations</span></div>
+<div class="ms-item" data-val="grit transportation services, llc"><input type="checkbox" value="grit transportation services, llc"><span>Grit Transportation Services, Llc</span></div>
+<div class="ms-item" data-val="h. c. schmieding produce company, llc"><input type="checkbox" value="h. c. schmieding produce company, llc"><span>H. C. Schmieding Produce Company, Llc</span></div>
+<div class="ms-item" data-val="h2o weld llc"><input type="checkbox" value="h2o weld llc"><span>H2O Weld Llc</span></div>
+<div class="ms-item" data-val="integrated vendor group"><input type="checkbox" value="integrated vendor group"><span>Integrated Vendor Group</span></div>
+<div class="ms-item" data-val="kmm telecommunications"><input type="checkbox" value="kmm telecommunications"><span>Kmm Telecommunications</span></div>
+<div class="ms-item" data-val="la foods"><input type="checkbox" value="la foods"><span>La Foods</span></div>
+<div class="ms-item" data-val="lions investment & trading inc (dba lions floor)"><input type="checkbox" value="lions investment & trading inc (dba lions floor)"><span>Lions Investment & Trading Inc (Dba Lions Floor)</span></div>
+<div class="ms-item" data-val="louis dreyfus company cotton llc"><input type="checkbox" value="louis dreyfus company cotton llc"><span>Louis Dreyfus Company Cotton Llc</span></div>
+<div class="ms-item" data-val="maple press company"><input type="checkbox" value="maple press company"><span>Maple Press Company</span></div>
+<div class="ms-item" data-val="mowi usa, llc (dba marine harvest usa, llc)"><input type="checkbox" value="mowi usa, llc (dba marine harvest usa, llc)"><span>Mowi Usa, Llc (Dba Marine Harvest Usa, Llc)</span></div>
+<div class="ms-item" data-val="netsync network solutions"><input type="checkbox" value="netsync network solutions"><span>Netsync Network Solutions</span></div>
+<div class="ms-item" data-val="oliver's diesel specialist"><input type="checkbox" value="oliver's diesel specialist"><span>Oliver'S Diesel Specialist</span></div>
+<div class="ms-item" data-val="professional traffic control, llc"><input type="checkbox" value="professional traffic control, llc"><span>Professional Traffic Control, Llc</span></div>
+<div class="ms-item" data-val="restaurant depot llc"><input type="checkbox" value="restaurant depot llc"><span>Restaurant Depot Llc</span></div>
+<div class="ms-item" data-val="wright coating company, inc."><input type="checkbox" value="wright coating company, inc."><span>Wright Coating Company, Inc.</span></div>
+    </div>
+  </div>
+</div>
+        <div class="ms-wrap" id="wrap-carr">
+  <div class="ms-pill" id="pill-carr" onclick="toggleMs('carr')">— Carrier —</div>
+  <div class="ms-dropdown" id="dd-carr">
+    <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('carr',this.value)" onclick="event.stopPropagation()">
+    <div class="ms-list" id="list-carr">
+      <div class="ms-item ms-all" onclick="clearMs('carr');event.stopPropagation()"><input type="checkbox" id="all-carr" checked><span>All</span></div>
+<div class="ms-item" data-val="1ST IN LINE LOGISTICS LLC"><input type="checkbox" value="1ST IN LINE LOGISTICS LLC"><span>1ST IN LINE LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="Acme Truck Line, Inc."><input type="checkbox" value="Acme Truck Line, Inc."><span>Acme Truck Line, Inc.</span></div>
+<div class="ms-item" data-val="Almata Trucking LLC"><input type="checkbox" value="Almata Trucking LLC"><span>Almata Trucking LLC</span></div>
+<div class="ms-item" data-val="BMA Trucking Services, INC."><input type="checkbox" value="BMA Trucking Services, INC."><span>BMA Trucking Services, INC.</span></div>
+<div class="ms-item" data-val="C&H UNITED TRUCKING INC"><input type="checkbox" value="C&H UNITED TRUCKING INC"><span>C&H UNITED TRUCKING INC</span></div>
+<div class="ms-item" data-val="CALHOUN TRUCK LINES"><input type="checkbox" value="CALHOUN TRUCK LINES"><span>CALHOUN TRUCK LINES</span></div>
+<div class="ms-item" data-val="CANO & SONS"><input type="checkbox" value="CANO & SONS"><span>CANO & SONS</span></div>
+<div class="ms-item" data-val="CASGO LOGISTIC LLC"><input type="checkbox" value="CASGO LOGISTIC LLC"><span>CASGO LOGISTIC LLC</span></div>
+<div class="ms-item" data-val="CASGO LOGISTIC LLC + TRANSPORTES H&H"><input type="checkbox" value="CASGO LOGISTIC LLC + TRANSPORTES H&H"><span>CASGO LOGISTIC LLC + TRANSPORTES H&H</span></div>
+<div class="ms-item" data-val="Convoy Logistics LLC"><input type="checkbox" value="Convoy Logistics LLC"><span>Convoy Logistics LLC</span></div>
+<div class="ms-item" data-val="Convoy Logistics LLC + UCW LOGISTICS LLC"><input type="checkbox" value="Convoy Logistics LLC + UCW LOGISTICS LLC"><span>Convoy Logistics LLC + UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="DAB Trucking Services"><input type="checkbox" value="DAB Trucking Services"><span>DAB Trucking Services</span></div>
+<div class="ms-item" data-val="DIALVAN INC + TRANSPORTES H&H"><input type="checkbox" value="DIALVAN INC + TRANSPORTES H&H"><span>DIALVAN INC + TRANSPORTES H&H</span></div>
+<div class="ms-item" data-val="Dynamic One Logistics"><input type="checkbox" value="Dynamic One Logistics"><span>Dynamic One Logistics</span></div>
+<div class="ms-item" data-val="E RUN 13 CORPORATION + TRANSPORTES H&H"><input type="checkbox" value="E RUN 13 CORPORATION + TRANSPORTES H&H"><span>E RUN 13 CORPORATION + TRANSPORTES H&H</span></div>
+<div class="ms-item" data-val="E&A Trans - ORD"><input type="checkbox" value="E&A Trans - ORD"><span>E&A Trans - ORD</span></div>
+<div class="ms-item" data-val="ERMILO E RICHER AGENICA ADUANA"><input type="checkbox" value="ERMILO E RICHER AGENICA ADUANA"><span>ERMILO E RICHER AGENICA ADUANA</span></div>
+<div class="ms-item" data-val="Evans Delivery Company"><input type="checkbox" value="Evans Delivery Company"><span>Evans Delivery Company</span></div>
+<div class="ms-item" data-val="ExFreight Zeta LLC"><input type="checkbox" value="ExFreight Zeta LLC"><span>ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="ExFreight Zeta LLC + HUBBARD EXPRESS AIR FREIGHT &"><input type="checkbox" value="ExFreight Zeta LLC + HUBBARD EXPRESS AIR FREIGHT &"><span>ExFreight Zeta LLC + HUBBARD EXPRESS AIR FREIGHT &</span></div>
+<div class="ms-item" data-val="ExFreight Zeta LLC + NEXT GEN C/O DIRECT FREIGHT ST"><input type="checkbox" value="ExFreight Zeta LLC + NEXT GEN C/O DIRECT FREIGHT ST"><span>ExFreight Zeta LLC + NEXT GEN C/O DIRECT FREIGHT ST</span></div>
+<div class="ms-item" data-val="FF C/O MKS SERVICES, LLC + ExFreight Zeta LLC"><input type="checkbox" value="FF C/O MKS SERVICES, LLC + ExFreight Zeta LLC"><span>FF C/O MKS SERVICES, LLC + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="FFE Transportation Services, Inc."><input type="checkbox" value="FFE Transportation Services, Inc."><span>FFE Transportation Services, Inc.</span></div>
+<div class="ms-item" data-val="FFE Transportation Services, Inc. + GlobalTranz Enterprises, LLC"><input type="checkbox" value="FFE Transportation Services, Inc. + GlobalTranz Enterprises, LLC"><span>FFE Transportation Services, Inc. + GlobalTranz Enterprises, LLC</span></div>
+<div class="ms-item" data-val="FORZA TRANSPORTATION SERVICES"><input type="checkbox" value="FORZA TRANSPORTATION SERVICES"><span>FORZA TRANSPORTATION SERVICES</span></div>
+<div class="ms-item" data-val="FORZA TRANSPORTATION SERVICES + RG FREIGHT LLC"><input type="checkbox" value="FORZA TRANSPORTATION SERVICES + RG FREIGHT LLC"><span>FORZA TRANSPORTATION SERVICES + RG FREIGHT LLC</span></div>
+<div class="ms-item" data-val="FORZA TRANSPORTATION SERVICES + VAQUERO RIDERS INC"><input type="checkbox" value="FORZA TRANSPORTATION SERVICES + VAQUERO RIDERS INC"><span>FORZA TRANSPORTATION SERVICES + VAQUERO RIDERS INC</span></div>
+<div class="ms-item" data-val="FOX' S TRANSPORT, INC."><input type="checkbox" value="FOX' S TRANSPORT, INC."><span>FOX' S TRANSPORT, INC.</span></div>
+<div class="ms-item" data-val="Gary Express LLC"><input type="checkbox" value="Gary Express LLC"><span>Gary Express LLC</span></div>
+<div class="ms-item" data-val="GlobalTranz Enterprises, LLC"><input type="checkbox" value="GlobalTranz Enterprises, LLC"><span>GlobalTranz Enterprises, LLC</span></div>
+<div class="ms-item" data-val="Globaltranz"><input type="checkbox" value="Globaltranz"><span>Globaltranz</span></div>
+<div class="ms-item" data-val="Grupo Rechy"><input type="checkbox" value="Grupo Rechy"><span>Grupo Rechy</span></div>
+<div class="ms-item" data-val="HIRSCHBACH TRANSPORTATION SERV"><input type="checkbox" value="HIRSCHBACH TRANSPORTATION SERV"><span>HIRSCHBACH TRANSPORTATION SERV</span></div>
+<div class="ms-item" data-val="HUBBARD EXPRESS AIR FREIGHT &"><input type="checkbox" value="HUBBARD EXPRESS AIR FREIGHT &"><span>HUBBARD EXPRESS AIR FREIGHT &</span></div>
+<div class="ms-item" data-val="HUBBARD EXPRESS AIR FREIGHT & + ExFreight Zeta LLC"><input type="checkbox" value="HUBBARD EXPRESS AIR FREIGHT & + ExFreight Zeta LLC"><span>HUBBARD EXPRESS AIR FREIGHT & + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="HUBBARD EXPRESS AIR FREIGHT & + UCW LOGISTICS LLC"><input type="checkbox" value="HUBBARD EXPRESS AIR FREIGHT & + UCW LOGISTICS LLC"><span>HUBBARD EXPRESS AIR FREIGHT & + UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="Hubbard Express AUS"><input type="checkbox" value="Hubbard Express AUS"><span>Hubbard Express AUS</span></div>
+<div class="ms-item" data-val="INDELIBLE LOGISTICS LLC"><input type="checkbox" value="INDELIBLE LOGISTICS LLC"><span>INDELIBLE LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="IRONHORSE MOTOR FREIGHT INC"><input type="checkbox" value="IRONHORSE MOTOR FREIGHT INC"><span>IRONHORSE MOTOR FREIGHT INC</span></div>
+<div class="ms-item" data-val="J&A Transport"><input type="checkbox" value="J&A Transport"><span>J&A Transport</span></div>
+<div class="ms-item" data-val="J. B. Hunt"><input type="checkbox" value="J. B. Hunt"><span>J. B. Hunt</span></div>
+<div class="ms-item" data-val="JERRY D FLANAGAN DBA PHER TRUCKING"><input type="checkbox" value="JERRY D FLANAGAN DBA PHER TRUCKING"><span>JERRY D FLANAGAN DBA PHER TRUCKING</span></div>
+<div class="ms-item" data-val="JORSTIN TRANSPORTATION SERVICE"><input type="checkbox" value="JORSTIN TRANSPORTATION SERVICE"><span>JORSTIN TRANSPORTATION SERVICE</span></div>
+<div class="ms-item" data-val="LCG FREIGHT INC"><input type="checkbox" value="LCG FREIGHT INC"><span>LCG FREIGHT INC</span></div>
+<div class="ms-item" data-val="LYKES CARTAGE - AMA + ExFreight Zeta LLC"><input type="checkbox" value="LYKES CARTAGE - AMA + ExFreight Zeta LLC"><span>LYKES CARTAGE - AMA + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="LYKES CARTAGE - AUS"><input type="checkbox" value="LYKES CARTAGE - AUS"><span>LYKES CARTAGE - AUS</span></div>
+<div class="ms-item" data-val="LYKES CARTAGE - IAH + ExFreight Zeta LLC"><input type="checkbox" value="LYKES CARTAGE - IAH + ExFreight Zeta LLC"><span>LYKES CARTAGE - IAH + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="MILLENIUM LOGISTICS + GlobalTranz Enterprises, LLC"><input type="checkbox" value="MILLENIUM LOGISTICS + GlobalTranz Enterprises, LLC"><span>MILLENIUM LOGISTICS + GlobalTranz Enterprises, LLC</span></div>
+<div class="ms-item" data-val="MILLENIUM LOGISTICS + Mainline Logistics + UCW LOGISTICS LLC"><input type="checkbox" value="MILLENIUM LOGISTICS + Mainline Logistics + UCW LOGISTICS LLC"><span>MILLENIUM LOGISTICS + Mainline Logistics + UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="MILLENIUM LOGISTICS + UCW LOGISTICS LLC"><input type="checkbox" value="MILLENIUM LOGISTICS + UCW LOGISTICS LLC"><span>MILLENIUM LOGISTICS + UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="MOUNT VISTA TRANSPORT LLC"><input type="checkbox" value="MOUNT VISTA TRANSPORT LLC"><span>MOUNT VISTA TRANSPORT LLC</span></div>
+<div class="ms-item" data-val="MVM LOGISTICS"><input type="checkbox" value="MVM LOGISTICS"><span>MVM LOGISTICS</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O ARETE TRADE DBA N"><input type="checkbox" value="NEXT GEN C/O ARETE TRADE DBA N"><span>NEXT GEN C/O ARETE TRADE DBA N</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC"><input type="checkbox" value="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC"><span>NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC + UCW LOGISTICS LLC"><input type="checkbox" value="NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC + UCW LOGISTICS LLC"><span>NEXT GEN C/O ARETE TRADE DBA N + ExFreight Zeta LLC + UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O DIRECT FREIGHT ST"><input type="checkbox" value="NEXT GEN C/O DIRECT FREIGHT ST"><span>NEXT GEN C/O DIRECT FREIGHT ST</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O DIRECT FREIGHT ST + ExFreight Zeta LLC"><input type="checkbox" value="NEXT GEN C/O DIRECT FREIGHT ST + ExFreight Zeta LLC"><span>NEXT GEN C/O DIRECT FREIGHT ST + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O GroundTrans Logistics"><input type="checkbox" value="NEXT GEN C/O GroundTrans Logistics"><span>NEXT GEN C/O GroundTrans Logistics</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O SAMU GROUP SERVIC"><input type="checkbox" value="NEXT GEN C/O SAMU GROUP SERVIC"><span>NEXT GEN C/O SAMU GROUP SERVIC</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O SAMU GROUP SERVIC + ExFreight Zeta LLC"><input type="checkbox" value="NEXT GEN C/O SAMU GROUP SERVIC + ExFreight Zeta LLC"><span>NEXT GEN C/O SAMU GROUP SERVIC + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="NEXT GEN C/O TYLER TRANSPORT + ExFreight Zeta LLC"><input type="checkbox" value="NEXT GEN C/O TYLER TRANSPORT + ExFreight Zeta LLC"><span>NEXT GEN C/O TYLER TRANSPORT + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="NEXTGEN C/O GATEWAY TRANSPORTA + ExFreight Zeta LLC"><input type="checkbox" value="NEXTGEN C/O GATEWAY TRANSPORTA + ExFreight Zeta LLC"><span>NEXTGEN C/O GATEWAY TRANSPORTA + ExFreight Zeta LLC</span></div>
+<div class="ms-item" data-val="NEXWAY LOGISTICS INC"><input type="checkbox" value="NEXWAY LOGISTICS INC"><span>NEXWAY LOGISTICS INC</span></div>
+<div class="ms-item" data-val="OVERLAND EXPRESS COMPANY"><input type="checkbox" value="OVERLAND EXPRESS COMPANY"><span>OVERLAND EXPRESS COMPANY</span></div>
+<div class="ms-item" data-val="PRO TRANSPORT LTD"><input type="checkbox" value="PRO TRANSPORT LTD"><span>PRO TRANSPORT LTD</span></div>
+<div class="ms-item" data-val="Perfect Logistics"><input type="checkbox" value="Perfect Logistics"><span>Perfect Logistics</span></div>
+<div class="ms-item" data-val="ROCKFORT TRANSPORTATION LLC"><input type="checkbox" value="ROCKFORT TRANSPORTATION LLC"><span>ROCKFORT TRANSPORTATION LLC</span></div>
+<div class="ms-item" data-val="SOLID TRANSPORTATION SERVICES INC"><input type="checkbox" value="SOLID TRANSPORTATION SERVICES INC"><span>SOLID TRANSPORTATION SERVICES INC</span></div>
+<div class="ms-item" data-val="STRTR LOGISTICS LLC"><input type="checkbox" value="STRTR LOGISTICS LLC"><span>STRTR LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="SWIFT TRANSPORTATION SERVICES, LLC"><input type="checkbox" value="SWIFT TRANSPORTATION SERVICES, LLC"><span>SWIFT TRANSPORTATION SERVICES, LLC</span></div>
+<div class="ms-item" data-val="ShipNova LLC"><input type="checkbox" value="ShipNova LLC"><span>ShipNova LLC</span></div>
+<div class="ms-item" data-val="Smith Transportation"><input type="checkbox" value="Smith Transportation"><span>Smith Transportation</span></div>
+<div class="ms-item" data-val="TRANCASA USA INC"><input type="checkbox" value="TRANCASA USA INC"><span>TRANCASA USA INC</span></div>
+<div class="ms-item" data-val="TRANSPORTES H&H"><input type="checkbox" value="TRANSPORTES H&H"><span>TRANSPORTES H&H</span></div>
+<div class="ms-item" data-val="TRANSPORTES H&H + VAQUERO RIDERS INC"><input type="checkbox" value="TRANSPORTES H&H + VAQUERO RIDERS INC"><span>TRANSPORTES H&H + VAQUERO RIDERS INC</span></div>
+<div class="ms-item" data-val="TRUER LOGISTICS AND TRAFFIC SE"><input type="checkbox" value="TRUER LOGISTICS AND TRAFFIC SE"><span>TRUER LOGISTICS AND TRAFFIC SE</span></div>
+<div class="ms-item" data-val="Taylor Logistics Inc"><input type="checkbox" value="Taylor Logistics Inc"><span>Taylor Logistics Inc</span></div>
+<div class="ms-item" data-val="Triple Crown Freight c/o Margin Freight"><input type="checkbox" value="Triple Crown Freight c/o Margin Freight"><span>Triple Crown Freight c/o Margin Freight</span></div>
+<div class="ms-item" data-val="UCW LOGISTICS LLC"><input type="checkbox" value="UCW LOGISTICS LLC"><span>UCW LOGISTICS LLC</span></div>
+<div class="ms-item" data-val="V & O CARRIERS LLC"><input type="checkbox" value="V & O CARRIERS LLC"><span>V & O CARRIERS LLC</span></div>
+<div class="ms-item" data-val="VAQUERO RIDERS INC"><input type="checkbox" value="VAQUERO RIDERS INC"><span>VAQUERO RIDERS INC</span></div>
+<div class="ms-item" data-val="VMC CARRIERS INC"><input type="checkbox" value="VMC CARRIERS INC"><span>VMC CARRIERS INC</span></div>
+<div class="ms-item" data-val="WYCHE TRUCKING LLC"><input type="checkbox" value="WYCHE TRUCKING LLC"><span>WYCHE TRUCKING LLC</span></div>
+<div class="ms-item" data-val="X TRANS INC"><input type="checkbox" value="X TRANS INC"><span>X TRANS INC</span></div>
+<div class="ms-item" data-val="XCF"><input type="checkbox" value="XCF"><span>XCF</span></div>
+    </div>
+  </div>
+</div>
+        <div class="ms-wrap" id="wrap-orig">
+  <div class="ms-pill" id="pill-orig" onclick="toggleMs('orig')">— Origin State —</div>
+  <div class="ms-dropdown" id="dd-orig">
+    <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('orig',this.value)" onclick="event.stopPropagation()">
+    <div class="ms-list" id="list-orig">
+      <div class="ms-item ms-all" onclick="clearMs('orig');event.stopPropagation()"><input type="checkbox" id="all-orig" checked><span>All</span></div>
+<div class="ms-item" data-val="AL"><input type="checkbox" value="AL"><span>AL</span></div>
+<div class="ms-item" data-val="AR"><input type="checkbox" value="AR"><span>AR</span></div>
+<div class="ms-item" data-val="AZ"><input type="checkbox" value="AZ"><span>AZ</span></div>
+<div class="ms-item" data-val="BC"><input type="checkbox" value="BC"><span>BC</span></div>
+<div class="ms-item" data-val="CA"><input type="checkbox" value="CA"><span>CA</span></div>
+<div class="ms-item" data-val="CHH"><input type="checkbox" value="CHH"><span>CHH</span></div>
+<div class="ms-item" data-val="CO"><input type="checkbox" value="CO"><span>CO</span></div>
+<div class="ms-item" data-val="DC"><input type="checkbox" value="DC"><span>DC</span></div>
+<div class="ms-item" data-val="FL"><input type="checkbox" value="FL"><span>FL</span></div>
+<div class="ms-item" data-val="GA"><input type="checkbox" value="GA"><span>GA</span></div>
+<div class="ms-item" data-val="HID"><input type="checkbox" value="HID"><span>HID</span></div>
+<div class="ms-item" data-val="IA"><input type="checkbox" value="IA"><span>IA</span></div>
+<div class="ms-item" data-val="IL"><input type="checkbox" value="IL"><span>IL</span></div>
+<div class="ms-item" data-val="IN"><input type="checkbox" value="IN"><span>IN</span></div>
+<div class="ms-item" data-val="KS"><input type="checkbox" value="KS"><span>KS</span></div>
+<div class="ms-item" data-val="KY"><input type="checkbox" value="KY"><span>KY</span></div>
+<div class="ms-item" data-val="LA"><input type="checkbox" value="LA"><span>LA</span></div>
+<div class="ms-item" data-val="MA"><input type="checkbox" value="MA"><span>MA</span></div>
+<div class="ms-item" data-val="MD"><input type="checkbox" value="MD"><span>MD</span></div>
+<div class="ms-item" data-val="MI"><input type="checkbox" value="MI"><span>MI</span></div>
+<div class="ms-item" data-val="MN"><input type="checkbox" value="MN"><span>MN</span></div>
+<div class="ms-item" data-val="MO"><input type="checkbox" value="MO"><span>MO</span></div>
+<div class="ms-item" data-val="MOR"><input type="checkbox" value="MOR"><span>MOR</span></div>
+<div class="ms-item" data-val="MS"><input type="checkbox" value="MS"><span>MS</span></div>
+<div class="ms-item" data-val="NC"><input type="checkbox" value="NC"><span>NC</span></div>
+<div class="ms-item" data-val="ND"><input type="checkbox" value="ND"><span>ND</span></div>
+<div class="ms-item" data-val="NH"><input type="checkbox" value="NH"><span>NH</span></div>
+<div class="ms-item" data-val="NJ"><input type="checkbox" value="NJ"><span>NJ</span></div>
+<div class="ms-item" data-val="NL"><input type="checkbox" value="NL"><span>NL</span></div>
+<div class="ms-item" data-val="NLE"><input type="checkbox" value="NLE"><span>NLE</span></div>
+<div class="ms-item" data-val="NM"><input type="checkbox" value="NM"><span>NM</span></div>
+<div class="ms-item" data-val="NS"><input type="checkbox" value="NS"><span>NS</span></div>
+<div class="ms-item" data-val="NV"><input type="checkbox" value="NV"><span>NV</span></div>
+<div class="ms-item" data-val="NY"><input type="checkbox" value="NY"><span>NY</span></div>
+<div class="ms-item" data-val="OH"><input type="checkbox" value="OH"><span>OH</span></div>
+<div class="ms-item" data-val="OK"><input type="checkbox" value="OK"><span>OK</span></div>
+<div class="ms-item" data-val="ON"><input type="checkbox" value="ON"><span>ON</span></div>
+<div class="ms-item" data-val="OR"><input type="checkbox" value="OR"><span>OR</span></div>
+<div class="ms-item" data-val="PA"><input type="checkbox" value="PA"><span>PA</span></div>
+<div class="ms-item" data-val="QC"><input type="checkbox" value="QC"><span>QC</span></div>
+<div class="ms-item" data-val="SC"><input type="checkbox" value="SC"><span>SC</span></div>
+<div class="ms-item" data-val="SD"><input type="checkbox" value="SD"><span>SD</span></div>
+<div class="ms-item" data-val="TN"><input type="checkbox" value="TN"><span>TN</span></div>
+<div class="ms-item" data-val="TX"><input type="checkbox" value="TX"><span>TX</span></div>
+<div class="ms-item" data-val="UT"><input type="checkbox" value="UT"><span>UT</span></div>
+<div class="ms-item" data-val="VA"><input type="checkbox" value="VA"><span>VA</span></div>
+<div class="ms-item" data-val="VC"><input type="checkbox" value="VC"><span>VC</span></div>
+<div class="ms-item" data-val="VT"><input type="checkbox" value="VT"><span>VT</span></div>
+<div class="ms-item" data-val="WA"><input type="checkbox" value="WA"><span>WA</span></div>
+<div class="ms-item" data-val="WI"><input type="checkbox" value="WI"><span>WI</span></div>
+<div class="ms-item" data-val="WY"><input type="checkbox" value="WY"><span>WY</span></div>
+    </div>
+  </div>
+</div>
+        <div class="ms-wrap" id="wrap-dest">
+  <div class="ms-pill" id="pill-dest" onclick="toggleMs('dest')">— Dest State —</div>
+  <div class="ms-dropdown" id="dd-dest">
+    <input class="ms-search" type="text" placeholder="Search…" oninput="filterMs('dest',this.value)" onclick="event.stopPropagation()">
+    <div class="ms-list" id="list-dest">
+      <div class="ms-item ms-all" onclick="clearMs('dest');event.stopPropagation()"><input type="checkbox" id="all-dest" checked><span>All</span></div>
+<div class="ms-item" data-val="AL"><input type="checkbox" value="AL"><span>AL</span></div>
+<div class="ms-item" data-val="AR"><input type="checkbox" value="AR"><span>AR</span></div>
+<div class="ms-item" data-val="AZ"><input type="checkbox" value="AZ"><span>AZ</span></div>
+<div class="ms-item" data-val="CA"><input type="checkbox" value="CA"><span>CA</span></div>
+<div class="ms-item" data-val="CO"><input type="checkbox" value="CO"><span>CO</span></div>
+<div class="ms-item" data-val="COL"><input type="checkbox" value="COL"><span>COL</span></div>
+<div class="ms-item" data-val="CT"><input type="checkbox" value="CT"><span>CT</span></div>
+<div class="ms-item" data-val="DC"><input type="checkbox" value="DC"><span>DC</span></div>
+<div class="ms-item" data-val="DE"><input type="checkbox" value="DE"><span>DE</span></div>
+<div class="ms-item" data-val="FL"><input type="checkbox" value="FL"><span>FL</span></div>
+<div class="ms-item" data-val="GA"><input type="checkbox" value="GA"><span>GA</span></div>
+<div class="ms-item" data-val="GUA"><input type="checkbox" value="GUA"><span>GUA</span></div>
+<div class="ms-item" data-val="HID"><input type="checkbox" value="HID"><span>HID</span></div>
+<div class="ms-item" data-val="IA"><input type="checkbox" value="IA"><span>IA</span></div>
+<div class="ms-item" data-val="ID"><input type="checkbox" value="ID"><span>ID</span></div>
+<div class="ms-item" data-val="IL"><input type="checkbox" value="IL"><span>IL</span></div>
+<div class="ms-item" data-val="IN"><input type="checkbox" value="IN"><span>IN</span></div>
+<div class="ms-item" data-val="KS"><input type="checkbox" value="KS"><span>KS</span></div>
+<div class="ms-item" data-val="KY"><input type="checkbox" value="KY"><span>KY</span></div>
+<div class="ms-item" data-val="LA"><input type="checkbox" value="LA"><span>LA</span></div>
+<div class="ms-item" data-val="MA"><input type="checkbox" value="MA"><span>MA</span></div>
+<div class="ms-item" data-val="MD"><input type="checkbox" value="MD"><span>MD</span></div>
+<div class="ms-item" data-val="ME"><input type="checkbox" value="ME"><span>ME</span></div>
+<div class="ms-item" data-val="MEX"><input type="checkbox" value="MEX"><span>MEX</span></div>
+<div class="ms-item" data-val="MI"><input type="checkbox" value="MI"><span>MI</span></div>
+<div class="ms-item" data-val="MN"><input type="checkbox" value="MN"><span>MN</span></div>
+<div class="ms-item" data-val="MO"><input type="checkbox" value="MO"><span>MO</span></div>
+<div class="ms-item" data-val="MOR"><input type="checkbox" value="MOR"><span>MOR</span></div>
+<div class="ms-item" data-val="MS"><input type="checkbox" value="MS"><span>MS</span></div>
+<div class="ms-item" data-val="MT"><input type="checkbox" value="MT"><span>MT</span></div>
+<div class="ms-item" data-val="MX"><input type="checkbox" value="MX"><span>MX</span></div>
+<div class="ms-item" data-val="NC"><input type="checkbox" value="NC"><span>NC</span></div>
+<div class="ms-item" data-val="ND"><input type="checkbox" value="ND"><span>ND</span></div>
+<div class="ms-item" data-val="NE"><input type="checkbox" value="NE"><span>NE</span></div>
+<div class="ms-item" data-val="NH"><input type="checkbox" value="NH"><span>NH</span></div>
+<div class="ms-item" data-val="NJ"><input type="checkbox" value="NJ"><span>NJ</span></div>
+<div class="ms-item" data-val="NM"><input type="checkbox" value="NM"><span>NM</span></div>
+<div class="ms-item" data-val="NV"><input type="checkbox" value="NV"><span>NV</span></div>
+<div class="ms-item" data-val="NY"><input type="checkbox" value="NY"><span>NY</span></div>
+<div class="ms-item" data-val="OH"><input type="checkbox" value="OH"><span>OH</span></div>
+<div class="ms-item" data-val="OK"><input type="checkbox" value="OK"><span>OK</span></div>
+<div class="ms-item" data-val="ON"><input type="checkbox" value="ON"><span>ON</span></div>
+<div class="ms-item" data-val="OR"><input type="checkbox" value="OR"><span>OR</span></div>
+<div class="ms-item" data-val="PA"><input type="checkbox" value="PA"><span>PA</span></div>
+<div class="ms-item" data-val="PUE"><input type="checkbox" value="PUE"><span>PUE</span></div>
+<div class="ms-item" data-val="QC"><input type="checkbox" value="QC"><span>QC</span></div>
+<div class="ms-item" data-val="SC"><input type="checkbox" value="SC"><span>SC</span></div>
+<div class="ms-item" data-val="SK"><input type="checkbox" value="SK"><span>SK</span></div>
+<div class="ms-item" data-val="TAM"><input type="checkbox" value="TAM"><span>TAM</span></div>
+<div class="ms-item" data-val="TN"><input type="checkbox" value="TN"><span>TN</span></div>
+<div class="ms-item" data-val="TX"><input type="checkbox" value="TX"><span>TX</span></div>
+<div class="ms-item" data-val="UT"><input type="checkbox" value="UT"><span>UT</span></div>
+<div class="ms-item" data-val="VA"><input type="checkbox" value="VA"><span>VA</span></div>
+<div class="ms-item" data-val="VC"><input type="checkbox" value="VC"><span>VC</span></div>
+<div class="ms-item" data-val="VT"><input type="checkbox" value="VT"><span>VT</span></div>
+<div class="ms-item" data-val="WA"><input type="checkbox" value="WA"><span>WA</span></div>
+<div class="ms-item" data-val="WI"><input type="checkbox" value="WI"><span>WI</span></div>
+<div class="ms-item" data-val="WV"><input type="checkbox" value="WV"><span>WV</span></div>
+    </div>
+  </div>
+</div>
         <span class="row-count" id="rowCount">3,078 jobs</span>
         <input class="srch-inp" id="srch" type="search" placeholder="AirBill, city, carrier…"/>
       </div>
@@ -493,7 +599,7 @@ const STATE_NAME_TO_ABBR = {
   'District of Columbia':'DC'
 };
 
-let activeYears=new Set(), activeMonths=new Set(), custF=new Set(), carrF='', stateF='', srchQ='';
+let activeYears=new Set(), activeMonths=new Set(), custF=new Set(), carrF=new Set(), origF=new Set(), destF=new Set(), srchQ='';
 let origCtryFilter=new Set(), destCtryFilter=new Set(); // empty = All
 
 // US state codes (2-letter, excluding Canadian/Mexican 2-letter codes)
@@ -668,8 +774,9 @@ function applyFilters(){
     if(activeYears.size>0 && !activeYears.has(tr.dataset.year)) show=false;
     if(activeMonths.size>0 && !activeMonths.has(tr.dataset.month)) show=false;
     if(custF.size>0 && !custF.has(tr.dataset.cust)) show=false;
-    if(carrF && tr.dataset.carr!==carrF) show=false;
-    if(stateF && tr.dataset.ostate!==stateF) show=false;
+    if(carrF.size>0 && !carrF.has(tr.dataset.carr)) show=false;
+    if(origF.size>0 && !origF.has(tr.dataset.ostate)) show=false;
+    if(destF.size>0 && !destF.has(tr.dataset.dstate)) show=false;
     if(srchQ && !tr.dataset.srch.includes(srchQ)) show=false;
     if(origCtryFilter.size>0 && !origCtryFilter.has(stateCountry(tr.dataset.ostate))) show=false;
     if(destCtryFilter.size>0 && !destCtryFilter.has(stateCountry(tr.dataset.dstate))) show=false;    tr.classList.toggle('hidden',!show);
@@ -729,17 +836,11 @@ document.querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',
   applyFilters();
 }));
 
-document.getElementById('carrSel').addEventListener('change',e=>{carrF=e.target.value.toLowerCase();applyFilters();});
-document.getElementById('stateSel').addEventListener('change',e=>{stateF=e.target.value;applyFilters();});
+
+
 document.getElementById('srch').addEventListener('input',e=>{srchQ=e.target.value.toLowerCase().trim();applyFilters();});
 
-// Customer dropdown (Ctrl/Cmd+click to select multiple; select All Customers to reset)
-document.getElementById('custSel').addEventListener('change',function(){
-  custF.clear();
-  Array.from(this.selectedOptions).forEach(o=>{ if(o.value) custF.add(o.value); });
-  // If nothing selected or only All Customers selected, custF stays empty = show all
-  applyFilters();
-});
+
 
 
 // Country filter buttons
@@ -763,6 +864,88 @@ function wireCtryBtns(prefix, filterSet){
 }
 wireCtryBtns('co', origCtryFilter);
 wireCtryBtns('cd', destCtryFilter);
+
+// Custom multi-select dropdowns
+const msFilters = {
+  cust: { set: custF, lower: true },
+  carr: { set: carrF, lower: true },
+  orig: { set: origF, lower: false },
+  dest: { set: destF, lower: false }
+};
+
+function toggleMs(id){
+  // Close all others first
+  ['cust','carr','orig','dest'].forEach(i=>{
+    if(i!==id) document.getElementById('dd-'+i).classList.remove('open');
+  });
+  document.getElementById('dd-'+id).classList.toggle('open');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click',e=>{
+  ['cust','carr','orig','dest'].forEach(id=>{
+    const wrap=document.getElementById('wrap-'+id);
+    if(wrap && !wrap.contains(e.target)){
+      document.getElementById('dd-'+id).classList.remove('open');
+    }
+  });
+});
+
+function filterMs(id, q){
+  const items=document.querySelectorAll('#list-'+id+' .ms-item:not(.ms-all)');
+  items.forEach(item=>{
+    item.classList.toggle('hidden', !item.textContent.toLowerCase().includes(q.toLowerCase()));
+  });
+}
+
+function clearMs(id){
+  const cfg=msFilters[id];
+  cfg.set.clear();
+  document.querySelectorAll('#list-'+id+' .ms-item:not(.ms-all) input').forEach(cb=>cb.checked=false);
+  document.getElementById('all-'+id).checked=true;
+  updatePill(id);
+  applyFilters();
+}
+
+function updatePill(id){
+  const cfg=msFilters[id];
+  const pill=document.getElementById('pill-'+id);
+  const labels={'cust':'— Customer —','carr':'— Carrier —','orig':'— Origin State —','dest':'— Dest State —'};
+  if(cfg.set.size===0){
+    pill.textContent=labels[id];
+    pill.classList.remove('has-sel');
+  } else if(cfg.set.size===1){
+    const v=[...cfg.set][0];
+    // Find display label
+    const item=document.querySelector('#list-'+id+' .ms-item:not(.ms-all) input[value="'+v+'"]');
+    pill.textContent=item ? item.parentElement.querySelector('span').textContent : v;
+    pill.classList.add('has-sel');
+  } else {
+    pill.textContent=cfg.set.size+' selected';
+    pill.classList.add('has-sel');
+  }
+  // Fix arrow (pill.textContent clobbers ::after so use dataset trick)
+  pill.setAttribute('data-label', pill.textContent);
+}
+
+// Wire checkboxes for all four dropdowns
+['cust','carr','orig','dest'].forEach(id=>{
+  document.querySelectorAll('#list-'+id+' .ms-item:not(.ms-all) input').forEach(cb=>{
+    cb.addEventListener('change', e=>{
+      e.stopPropagation();
+      const cfg=msFilters[id];
+      const val=cfg.lower ? cb.value.toLowerCase() : cb.value;
+      if(cb.checked){ cfg.set.add(val); document.getElementById('all-'+id).checked=false; }
+      else { cfg.set.delete(val); }
+      if(cfg.set.size===0) document.getElementById('all-'+id).checked=true;
+      updatePill(id);
+      applyFilters();
+    });
+  });
+  document.querySelectorAll('#list-'+id+' .ms-item:not(.ms-all)').forEach(item=>{
+    item.addEventListener('click', e=>{ if(e.target.tagName!=='INPUT') item.querySelector('input').click(); });
+  });
+});
 
 </script>
 </body>
