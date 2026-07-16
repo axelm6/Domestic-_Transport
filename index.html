@@ -208,7 +208,7 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
         <span class="drawer-toggle open" id="drawerToggle">▲</span>
       </div>
       <div class="drawer-controls">
-        <select class="ctrl-sel" id="custSel">
+        <select class="ctrl-sel" id="custSel" multiple>
 <option value="" selected>— All Customers —</option>
 <option value="1 click logistics">1 Click Logistics</option>
 <option value="aborder products inc">Aborder Products Inc</option>
@@ -733,10 +733,11 @@ document.getElementById('carrSel').addEventListener('change',e=>{carrF=e.target.
 document.getElementById('stateSel').addEventListener('change',e=>{stateF=e.target.value;applyFilters();});
 document.getElementById('srch').addEventListener('input',e=>{srchQ=e.target.value.toLowerCase().trim();applyFilters();});
 
-// Customer dropdown
+// Customer dropdown (Ctrl/Cmd+click to select multiple; select All Customers to reset)
 document.getElementById('custSel').addEventListener('change',function(){
   custF.clear();
-  if(this.value) custF.add(this.value); // empty string = All Customers
+  Array.from(this.selectedOptions).forEach(o=>{ if(o.value) custF.add(o.value); });
+  // If nothing selected or only All Customers selected, custF stays empty = show all
   applyFilters();
 });
 
