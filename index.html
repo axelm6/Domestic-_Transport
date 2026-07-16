@@ -208,7 +208,8 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
         <span class="drawer-toggle open" id="drawerToggle">▲</span>
       </div>
       <div class="drawer-controls">
-        <select class="ctrl-sel" id="custSel" multiple size="1" style="height:auto">
+        <select class="ctrl-sel" id="custSel">
+<option value="" selected>— All Customers —</option>
 <option value="1 click logistics">1 Click Logistics</option>
 <option value="aborder products inc">Aborder Products Inc</option>
 <option value="aclsa llc dba redsmith graphic solutions">Aclsa Llc Dba Redsmith Graphic Solutions</option>
@@ -552,6 +553,8 @@ function toggleDrawer(){
 window.addEventListener('load',()=>{
   map=L.map('map',{center:[38,-96],zoom:4,scrollWheelZoom:true,preferCanvas:true,attributionControl:false});
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+  // Show table data immediately without waiting for GeoJSON
+  applyFilters();
   fetch('https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json')
     .then(r=>r.json())
     .then(geo=>{
@@ -729,10 +732,10 @@ document.getElementById('carrSel').addEventListener('change',e=>{carrF=e.target.
 document.getElementById('stateSel').addEventListener('change',e=>{stateF=e.target.value;applyFilters();});
 document.getElementById('srch').addEventListener('input',e=>{srchQ=e.target.value.toLowerCase().trim();applyFilters();});
 
-// Customer dropdown (multi-select: hold Ctrl/Cmd to pick multiple)
+// Customer dropdown
 document.getElementById('custSel').addEventListener('change',function(){
   custF.clear();
-  Array.from(this.selectedOptions).forEach(o=>{ if(o.value) custF.add(o.value); });
+  if(this.value) custF.add(this.value); // empty string = All Customers
   applyFilters();
 });
 
