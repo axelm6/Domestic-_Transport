@@ -592,6 +592,7 @@ function curvedArc(from,to,n=40){
 
 // Draw all lanes
 function drawLanes(data){
+  if(!map) return;
   arcLayers.forEach(l=>map.removeLayer(l)); arcLayers=[];
   dotLayers.forEach(l=>map.removeLayer(l)); dotLayers=[];
   const MX_CODES=['CHH','HID','NLE','NL','MOR','MEX','PUE','TAM','COL','GUA','MX','BC','NS','ON','QC','SK','AB','NB','MB','PE','VC'];
@@ -739,24 +740,6 @@ document.getElementById('custSel').addEventListener('change',function(){
   applyFilters();
 });
 
-
-  applyFilters();
-});
-document.getElementById('custSearch').addEventListener('input',e=>{
-  const q=e.target.value.toLowerCase();
-  document.querySelectorAll('.cust-opt').forEach(opt=>{
-    opt.classList.toggle('hidden', !opt.textContent.toLowerCase().includes(q));
-  });
-});
-document.querySelectorAll('.cust-cb').forEach(cb=>{
-  cb.addEventListener('change',()=>{
-    if(cb.checked){ custF.add(cb.value); }
-    else { custF.delete(cb.value); }
-    updateCustClearBtn();
-    applyFilters();
-  });
-});
-updateCustClearBtn();
 
 // Country filter buttons
 function wireCtryBtns(prefix, filterSet){
