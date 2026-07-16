@@ -42,18 +42,18 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .sb-btn.y-active{background:var(--teal);color:var(--white);border-color:var(--teal);font-weight:600;}
 .sb-btn.m-active{background:var(--navy);color:var(--white);border-color:var(--navy);font-weight:600;}
 .sb-divider{height:1px;background:var(--border);margin:0.2rem 0.2rem;}
-.cust-multi{display:flex;flex-direction:column;gap:0;}
-.cust-search-wrap{display:flex;gap:0.3rem;align-items:center;padding:0.35rem 0.5rem;border-bottom:1px solid var(--border);}
-.cust-search{flex:1;font-family:'DM Sans',sans-serif;font-size:0.72rem;border:1px solid var(--border);border-radius:5px;padding:0.25rem 0.4rem;outline:none;background:var(--bg);color:var(--text);}
-.cust-search:focus{border-color:var(--teal);}
-.cust-clear-btn{font-family:'DM Sans',sans-serif;font-size:0.68rem;font-weight:600;padding:0.22rem 0.5rem;border:1px solid var(--border);border-radius:5px;background:var(--white);color:var(--sub);cursor:pointer;white-space:nowrap;transition:all 0.12s;}
-.cust-clear-btn:hover,.cust-clear-btn.active{background:var(--teal);color:var(--white);border-color:var(--teal);}
-.cust-clear-btn.active{font-weight:700;}
-.cust-list{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;}
-.cust-opt{display:flex;align-items:flex-start;gap:0.35rem;padding:0.28rem 0.5rem;font-size:0.71rem;color:var(--text);cursor:pointer;transition:background 0.1s;line-height:1.3;}
-.cust-opt:hover{background:var(--bg);}
+
+
+
+
+
+
+
+
+
+
 .cust-opt input{margin-top:0.1rem;accent-color:var(--teal);cursor:pointer;flex-shrink:0;}
-.cust-opt.hidden{display:none;}
+
 .ctry-btn{display:block;width:100%;text-align:left;border:1px solid var(--border);background:var(--white);color:var(--sub);font-family:'DM Sans',sans-serif;font-size:0.73rem;padding:0.28rem 0.55rem;border-radius:6px;cursor:pointer;margin-bottom:0.28rem;transition:all 0.12s;}
 .ctry-btn:hover{background:var(--bg);color:var(--text);border-color:#b0bec5;}
 .ctry-btn.c-on{background:var(--teal);color:var(--white);border-color:var(--teal);font-weight:600;}
@@ -208,51 +208,45 @@ td{padding:0.4rem 0.55rem;vertical-align:middle;overflow:hidden;text-overflow:el
         <span class="drawer-toggle open" id="drawerToggle">▲</span>
       </div>
       <div class="drawer-controls">
-        <div class="cust-multi" id="custMulti">
-  <div class="cust-search-wrap">
-    <input type="text" id="custSearch" class="cust-search" placeholder="Search customers…">
-    <button class="cust-clear-btn" id="custClearBtn">All</button>
-  </div>
-  <div class="cust-list" id="custList">
-<label class="cust-opt"><input type="checkbox" value="1 Click Logistics" class="cust-cb"> 1 Click Logistics</label>
-<label class="cust-opt"><input type="checkbox" value="Aborder Products Inc" class="cust-cb"> Aborder Products Inc</label>
-<label class="cust-opt"><input type="checkbox" value="Aclsa Llc Dba Redsmith Graphic Solutions" class="cust-cb"> Aclsa Llc Dba Redsmith Graphic Solutions</label>
-<label class="cust-opt"><input type="checkbox" value="Applied Digital" class="cust-cb"> Applied Digital</label>
-<label class="cust-opt"><input type="checkbox" value="Axalta Coating Systems, Llc" class="cust-cb"> Axalta Coating Systems, Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Bailey Pottery Equipment" class="cust-cb"> Bailey Pottery Equipment</label>
-<label class="cust-opt"><input type="checkbox" value="California Daries Inc." class="cust-cb"> California Daries Inc.</label>
-<label class="cust-opt"><input type="checkbox" value="Cardinal Health (Dba Optifreight)" class="cust-cb"> Cardinal Health (Dba Optifreight)</label>
-<label class="cust-opt"><input type="checkbox" value="Carl Vogel" class="cust-cb"> Carl Vogel</label>
-<label class="cust-opt"><input type="checkbox" value="Common Cents Ems Supply Llc" class="cust-cb"> Common Cents Ems Supply Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Connell Usa Llc" class="cust-cb"> Connell Usa Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Cooperative Regions Of Organic Producer Pools" class="cust-cb"> Cooperative Regions Of Organic Producer Pools</label>
-<label class="cust-opt"><input type="checkbox" value="Core & Main Lp" class="cust-cb"> Core & Main Lp</label>
-<label class="cust-opt"><input type="checkbox" value="Cts Corporation" class="cust-cb"> Cts Corporation</label>
-<label class="cust-opt"><input type="checkbox" value="Enorise Americas Llc" class="cust-cb"> Enorise Americas Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Evo Logistic" class="cust-cb"> Evo Logistic</label>
-<label class="cust-opt"><input type="checkbox" value="Factor Bikes Usa Llc" class="cust-cb"> Factor Bikes Usa Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Fala Technologies Inc." class="cust-cb"> Fala Technologies Inc.</label>
-<label class="cust-opt"><input type="checkbox" value="Floraflex Corp" class="cust-cb"> Floraflex Corp</label>
-<label class="cust-opt"><input type="checkbox" value="Fruit Master Farm Operations Pty Ltd" class="cust-cb"> Fruit Master Farm Operations Pty Ltd</label>
-<label class="cust-opt"><input type="checkbox" value="Goodpack Usa" class="cust-cb"> Goodpack Usa</label>
-<label class="cust-opt"><input type="checkbox" value="Green Innovations" class="cust-cb"> Green Innovations</label>
-<label class="cust-opt"><input type="checkbox" value="Grit Transportation Services, Llc" class="cust-cb"> Grit Transportation Services, Llc</label>
-<label class="cust-opt"><input type="checkbox" value="H. C. Schmieding Produce Company, Llc" class="cust-cb"> H. C. Schmieding Produce Company, Llc</label>
-<label class="cust-opt"><input type="checkbox" value="H2O Weld Llc" class="cust-cb"> H2O Weld Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Integrated Vendor Group" class="cust-cb"> Integrated Vendor Group</label>
-<label class="cust-opt"><input type="checkbox" value="Kmm Telecommunications" class="cust-cb"> Kmm Telecommunications</label>
-<label class="cust-opt"><input type="checkbox" value="La Foods" class="cust-cb"> La Foods</label>
-<label class="cust-opt"><input type="checkbox" value="Lions Investment & Trading Inc (Dba Lions Floor)" class="cust-cb"> Lions Investment & Trading Inc (Dba Lions Floor)</label>
-<label class="cust-opt"><input type="checkbox" value="Louis Dreyfus Company Cotton Llc" class="cust-cb"> Louis Dreyfus Company Cotton Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Maple Press Company" class="cust-cb"> Maple Press Company</label>
-<label class="cust-opt"><input type="checkbox" value="Mowi Usa, Llc (Dba Marine Harvest Usa, Llc)" class="cust-cb"> Mowi Usa, Llc (Dba Marine Harvest Usa, Llc)</label>
-<label class="cust-opt"><input type="checkbox" value="Netsync Network Solutions" class="cust-cb"> Netsync Network Solutions</label>
-<label class="cust-opt"><input type="checkbox" value="Oliver'S Diesel Specialist" class="cust-cb"> Oliver'S Diesel Specialist</label>
-<label class="cust-opt"><input type="checkbox" value="Professional Traffic Control, Llc" class="cust-cb"> Professional Traffic Control, Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Restaurant Depot Llc" class="cust-cb"> Restaurant Depot Llc</label>
-<label class="cust-opt"><input type="checkbox" value="Wright Coating Company, Inc." class="cust-cb"> Wright Coating Company, Inc.</label>
-  </div>
-</div>
+        <select class="ctrl-sel" id="custSel" multiple size="1" style="height:auto">
+<option value="1 click logistics">1 Click Logistics</option>
+<option value="aborder products inc">Aborder Products Inc</option>
+<option value="aclsa llc dba redsmith graphic solutions">Aclsa Llc Dba Redsmith Graphic Solutions</option>
+<option value="applied digital">Applied Digital</option>
+<option value="axalta coating systems, llc">Axalta Coating Systems, Llc</option>
+<option value="bailey pottery equipment">Bailey Pottery Equipment</option>
+<option value="california daries inc.">California Daries Inc.</option>
+<option value="cardinal health (dba optifreight)">Cardinal Health (Dba Optifreight)</option>
+<option value="carl vogel">Carl Vogel</option>
+<option value="common cents ems supply llc">Common Cents Ems Supply Llc</option>
+<option value="connell usa llc">Connell Usa Llc</option>
+<option value="cooperative regions of organic producer pools">Cooperative Regions Of Organic Producer Pools</option>
+<option value="core & main lp">Core & Main Lp</option>
+<option value="cts corporation">Cts Corporation</option>
+<option value="enorise americas llc">Enorise Americas Llc</option>
+<option value="evo logistic">Evo Logistic</option>
+<option value="factor bikes usa llc">Factor Bikes Usa Llc</option>
+<option value="fala technologies inc.">Fala Technologies Inc.</option>
+<option value="floraflex corp">Floraflex Corp</option>
+<option value="fruit master farm operations pty ltd">Fruit Master Farm Operations Pty Ltd</option>
+<option value="goodpack usa">Goodpack Usa</option>
+<option value="green innovations">Green Innovations</option>
+<option value="grit transportation services, llc">Grit Transportation Services, Llc</option>
+<option value="h. c. schmieding produce company, llc">H. C. Schmieding Produce Company, Llc</option>
+<option value="h2o weld llc">H2O Weld Llc</option>
+<option value="integrated vendor group">Integrated Vendor Group</option>
+<option value="kmm telecommunications">Kmm Telecommunications</option>
+<option value="la foods">La Foods</option>
+<option value="lions investment & trading inc (dba lions floor)">Lions Investment & Trading Inc (Dba Lions Floor)</option>
+<option value="louis dreyfus company cotton llc">Louis Dreyfus Company Cotton Llc</option>
+<option value="maple press company">Maple Press Company</option>
+<option value="mowi usa, llc (dba marine harvest usa, llc)">Mowi Usa, Llc (Dba Marine Harvest Usa, Llc)</option>
+<option value="netsync network solutions">Netsync Network Solutions</option>
+<option value="oliver's diesel specialist">Oliver'S Diesel Specialist</option>
+<option value="professional traffic control, llc">Professional Traffic Control, Llc</option>
+<option value="restaurant depot llc">Restaurant Depot Llc</option>
+<option value="wright coating company, inc.">Wright Coating Company, Inc.</option>
+</select>
         <select class="ctrl-sel" id="carrSel"><option value="">— Carrier —</option><option value="1ST IN LINE LOGISTICS LLC">1ST IN LINE LOGISTICS LLC</option>
 <option value="Acme Truck Line, Inc.">Acme Truck Line, Inc.</option>
 <option value="Almata Trucking LLC">Almata Trucking LLC</option>
@@ -498,7 +492,7 @@ const STATE_NAME_TO_ABBR = {
   'District of Columbia':'DC'
 };
 
-let activeYears=new Set(), activeMonths=new Set(), custF=new Set(), carrF='', stateF='', srchQ=''; // custF empty = All // empty Set = All
+let activeYears=new Set(), activeMonths=new Set(), custF=new Set(), carrF='', stateF='', srchQ='';
 let origCtryFilter=new Set(), destCtryFilter=new Set(); // empty = All
 
 // US state codes (2-letter, excluding Canadian/Mexican 2-letter codes)
@@ -670,7 +664,7 @@ function applyFilters(){
     if(activeYears.size>0 && !activeYears.has(tr.dataset.year)) show=false;
     if(activeMonths.size>0 && !activeMonths.has(tr.dataset.month)) show=false;
     if(custF.size>0 && !custF.has(tr.dataset.cust)) show=false;
-    if(carrF && tr.dataset.carr!==carrF.toLowerCase()) show=false;
+    if(carrF && tr.dataset.carr!==carrF) show=false;
     if(stateF && tr.dataset.ostate!==stateF) show=false;
     if(srchQ && !tr.dataset.srch.includes(srchQ)) show=false;
     if(origCtryFilter.size>0 && !origCtryFilter.has(stateCountry(tr.dataset.ostate))) show=false;
@@ -730,20 +724,19 @@ document.querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',
   }
   applyFilters();
 }));
-document.getElementById('custSel').addEventListener('change',e=>{custF=e.target.value;applyFilters();});
-document.getElementById('carrSel').addEventListener('change',e=>{carrF=e.target.value;applyFilters();});
+
+document.getElementById('carrSel').addEventListener('change',e=>{carrF=e.target.value.toLowerCase();applyFilters();});
 document.getElementById('stateSel').addEventListener('change',e=>{stateF=e.target.value;applyFilters();});
 document.getElementById('srch').addEventListener('input',e=>{srchQ=e.target.value.toLowerCase().trim();applyFilters();});
 
-// Customer multi-select
-function updateCustClearBtn(){
-  const btn=document.getElementById('custClearBtn');
-  btn.classList.toggle('active', custF.size===0);
-}
-document.getElementById('custClearBtn').addEventListener('click',()=>{
+// Customer dropdown (multi-select: hold Ctrl/Cmd to pick multiple)
+document.getElementById('custSel').addEventListener('change',function(){
   custF.clear();
-  document.querySelectorAll('.cust-cb').forEach(cb=>cb.checked=false);
-  updateCustClearBtn();
+  Array.from(this.selectedOptions).forEach(o=>{ if(o.value) custF.add(o.value); });
+  applyFilters();
+});
+
+
   applyFilters();
 });
 document.getElementById('custSearch').addEventListener('input',e=>{
